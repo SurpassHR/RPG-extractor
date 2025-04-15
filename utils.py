@@ -1,27 +1,27 @@
+import os
+from rubymarshal.classes import RubyString
+from definitions import FileType
+
 PRINT_LIST_FLG = False
-def printList(dataList: list, needPrint: bool):
+def printList(dataList: list, needPrint: bool) -> None:
     if not PRINT_LIST_FLG and not needPrint:
         return
     if dataList is not None and dataList != []:
         for item in dataList:
             print(item)
 
-import os
-
 LIST_WRITE_FILE_FLG = True
-def writeListToFile(dataList: list, fileName: str):
+def writeListToFile(dataList: list, fileName: str, firstWrite: bool) -> None:
     if not LIST_WRITE_FILE_FLG:
         return
-    if os.path.exists(fileName):
+    if firstWrite and os.path.exists(fileName):
         os.remove(fileName)
     if dataList is not None and dataList != []:
         with open(fileName, 'a') as f:
             for item in dataList:
                 f.write(str(item) + '\n')
 
-from rubymarshal.classes import RubyString
-
-def traverseListBytesDecode(dataList: list):
+def traverseListBytesDecode(dataList: list) -> list:
     retList = []
     for item in dataList:
         if isinstance(item, list):
@@ -36,3 +36,17 @@ def traverseListBytesDecode(dataList: list):
             continue
 
     return retList
+
+def getFileListFromPath(extractPath: str, fileType: FileType) -> list:
+    fileExt = fileType.value
+    fileList = os.listdir(extractPath)
+    fileList = [file for file in fileList if os.path.splitext(file)[1] == fileExt]
+    fileList = [os.path.join(extractPath, file) for file in fileList]
+
+    return fileList
+
+def listDedup(dataList: list) -> list:
+    tempDataList = []
+    [tempDataList.append(item) for item in dataList if item not in tempDataList]
+
+    return tempDataList

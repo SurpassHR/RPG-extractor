@@ -1,34 +1,19 @@
 import os
-from enum import StrEnum, IntEnum
 from rubymarshal import reader
 from rubymarshal.classes import RubyObject, UserDef
 from typing import List, Any
-from utils import printList, writeListToFile, traverseListBytesDecode
+from definitions import FileType, RubyObjAttrCode
 
-class FileType(StrEnum):
-    RXDATA = '.rxdata'
-    RVDATA = '.rvdata'
-
-class RubyObjAttrCode(IntEnum):
-    TITLE = 101 # 标题
-    OPTION = 102 # 选项
-    TEXT_DISP = 401 # 文本显示
+from utils import printList, writeListToFile, traverseListBytesDecode, getFileListFromPath, listDedup
 
 class Extractor:
     def __init__(self, extractPath: str):
         self.extractPath = extractPath
         self.rubyObjList: List[RubyObject] = []
-
-    def _getFileList(self, extractPath: str, fileType: FileType):
-        fileExt = fileType.value
-        fileList = os.listdir(extractPath)
-        fileList = [file for file in fileList if os.path.splitext(file)[1] == fileExt]
-        fileList = [os.path.join(extractPath, file) for file in fileList]
-        return fileList
+        self.globalFirstWrite = True
 
     def _readRxdata(self, filePath: str) -> List[RubyObject]:
         ret = []
-        print(filePath)
         with open(filePath, 'rb') as f:
             data = reader.load(f)
             if isinstance(data, RubyObject):
@@ -36,10 +21,8 @@ class Extractor:
             elif isinstance(data, list):
                 ret.append(data[1])
             pass
-        return ret
 
-    def _readRvdata(self, filePath: str):
-        pass
+        return ret
 
     def _hasDeeperRubyObj(self, obj: RubyObject):
         rubyObjAttrs = obj.attributes
@@ -52,11 +35,10 @@ class Extractor:
         retList = []
 
         def __extendRetList(extendData: list):
-            if res is not None and res != []:
+            if extendData is not None and extendData != []:
                 retList.extend(extendData)
 
-        # 可能是 list、dict或RubyObject
-        if isinstance(obj, list):
+        def __procList(obj: list):
             # list需要保证每个进入递归的对象都是RubyObject
             for item in obj:
                 res = self._traverseRubyObj(item)
@@ -64,18 +46,15 @@ class Extractor:
             printList(retList, False)
             return retList
 
-        if isinstance(obj, dict):
+        def __procDict(obj: dict):
             keys = obj.keys()
             for key in keys:
-                try:
-                    res = self._traverseRubyObj(obj[key])
-                    __extendRetList(res)
-                except:
-                    continue
+                res = self._traverseRubyObj(obj[key])
+                __extendRetList(res)
             printList(retList, False)
             return retList
 
-        if isinstance(obj, RubyObject):
+        def __procRubyObj(obj: RubyObject):
             if self._hasDeeperRubyObj(obj):
                 attrs = obj.attributes
                 res = self._traverseRubyObj(attrs)
@@ -84,33 +63,56 @@ class Extractor:
                 return retList
             return [obj]
 
+        # 可能是 list、dict或RubyObject
+        if isinstance(obj, list):
+            return __procList(obj)
+
+        if isinstance(obj, dict):
+            return __procDict(obj)
+
+        if isinstance(obj, RubyObject):
+            return __procRubyObj(obj)
+
         return retList
 
     def procData(self):
-        fileList = self._getFileList(self.extractPath, FileType.RXDATA)
+        fileList = getFileListFromPath(self.extractPath, FileType.RXDATA)
         fileDataList = []
         for file in fileList:
             try:
                 fileDataList.append(self._readRxdata(file))
-            except:
+                print(f'Succeed reading file {file}')
+            except Exception as e:
+                print(f'Error reading file {file}: {e}')
                 continue
 
         for fileData in fileDataList:
+            atomObjList: List[RubyObject] = []
             for rubyObj in fileData:
-                atomObjList = self._traverseRubyObj(rubyObj)
+                try:
+                    atomObjList = self._traverseRubyObj(rubyObj)
+                except Exception as e:
+                    print(f'Error processing RubyObject: {e}')
+                    continue
             printList(atomObjList, False)
-            writeListToFile(atomObjList, 'debug_files/atomRubyObjs.txt')
+            writeListToFile(atomObjList, 'debug_files/atomRubyObjs.txt', firstWrite=self.globalFirstWrite)
+            self.globalFirstWrite = False
             self.rubyObjList.extend(atomObjList)
 
     def getDialogueFromRubyObjs(self):
         textDispList = []
         titleList = []
+        dialogueList = []
         optionList = []
         for item in self.rubyObjList:
             attrs = item.attributes
             code = attrs.get('@code')
-            content = attrs.get('@parameters')
+            content: list = attrs.get('@parameters', [])
             if code:
+                # 需要两者合并来展示完整对话
+                if code == RubyObjAttrCode.TEXT_DISP or code == RubyObjAttrCode.TITLE:
+                    dialogue = content[0].decode('utf-8') if isinstance(content[0], bytes) else content[0]
+                    dialogueList.append(dialogue)
                 if code == RubyObjAttrCode.TEXT_DISP:
                     textDisp = content[0].decode('utf-8') if isinstance(content[0], bytes) else content[0]
                     textDispList.append(textDisp)
@@ -123,38 +125,17 @@ class Extractor:
                         option = traverseListBytesDecode(option)
                     optionList.append(option)
 
-        # 去重
-        textDispList = list(set(textDispList))
-        printList(textDispList, True)
-        writeListToFile(textDispList, 'debug_files/textDisp.txt')
+        def __dedupDataListAndSaveDebugFile(dataList: list, fileName: str):
+            # 去重时使用列表推理，而不是转为set再转回list，保证对话顺序不变
+            tempDataList = listDedup(dataList)
+            printList(tempDataList, False)
+            writeListToFile(tempDataList, fileName, firstWrite=True)
 
-        # 去重
-        titleList = list(set(titleList))
-        printList(titleList, True)
-        writeListToFile(titleList, 'debug_files/title.txt')
-
-        # 去重
-        tempOptionList = []
-        [item for item in optionList if item not in tempOptionList]
-        printList(tempOptionList, True)
-        writeListToFile(tempOptionList, 'debug_files/option.txt')
-
-class FileExtractor(Extractor):
-    def __init__(self, extractPath):
-        super().__init__(extractPath)
-
-    def _getFileList(self, extractPath, fileType):
-        if os.path.exists(self.extractPath):
-            absPath = os.path.join(os.getcwd(), self.extractPath)
-            return [absPath]
+        __dedupDataListAndSaveDebugFile(dialogueList, 'debug_files/dialogue.txt')
+        __dedupDataListAndSaveDebugFile(optionList, 'debug_files/option.txt')
 
 def testExtractRxdataInFolder(folderPath: str):
     extractor = Extractor(folderPath)
-    extractor.procData()
-    extractor.getDialogueFromRubyObjs()
-
-def testExtractRxdataFromFile(filePath: str):
-    extractor = FileExtractor(filePath)
     extractor.procData()
     extractor.getDialogueFromRubyObjs()
 
@@ -162,6 +143,3 @@ if __name__ == '__main__':
     folderName = 'example_data'
     dataPath = os.path.join(os.getcwd(), folderName)
     testExtractRxdataInFolder(dataPath)
-
-    # filePath = os.path.join('example_data', 'Scripts.rxdata')
-    # testExtractRxdataFromFile(filePath)
