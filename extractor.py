@@ -5,12 +5,17 @@ from typing import List, Any
 from definitions import FileType, RubyObjAttrCode
 
 from utils import printList, writeListToFile, traverseListBytesDecode, getFileListFromPath, listDedup
+from ruby_obj_formatter import RubyObjFormatter
 
-class Extractor:
-    def __init__(self, extractPath: str):
+class Extractor(RubyObjFormatter):
+    def __init__(self, extractPath: str) -> None:
+        RubyObjFormatter.__init__(self)
+
         self.extractPath = extractPath
         self.rubyObjList: List[RubyObject] = []
         self.globalFirstWrite = True
+
+        return
 
     def _readRxdata(self, filePath: str) -> List[RubyObject]:
         ret = []
@@ -94,6 +99,7 @@ class Extractor:
                 except Exception as e:
                     print(f'Error processing RubyObject: {e}')
                     continue
+            atomObjList = listDedup(atomObjList)
             printList(atomObjList, False)
             writeListToFile(atomObjList, 'debug_files/atomRubyObjs.txt', firstWrite=self.globalFirstWrite)
             self.globalFirstWrite = False
@@ -126,11 +132,10 @@ class Extractor:
                     optionList.append(option)
 
         def __dedupDataListAndSaveDebugFile(dataList: list, fileName: str):
-            # 去重时使用列表推理，而不是转为set再转回list，保证对话顺序不变
-            tempDataList = listDedup(dataList)
-            printList(tempDataList, False)
-            writeListToFile(tempDataList, fileName, firstWrite=True)
+            printList(dataList, False)
+            writeListToFile(dataList, fileName, firstWrite=True)
 
+        # dialogueList = self.processRubyObjList(dialogueList)
         __dedupDataListAndSaveDebugFile(dialogueList, 'debug_files/dialogue.txt')
         __dedupDataListAndSaveDebugFile(optionList, 'debug_files/option.txt')
 

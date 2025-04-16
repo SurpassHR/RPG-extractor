@@ -46,6 +46,7 @@ def getFileListFromPath(extractPath: str, fileType: FileType) -> list:
     return fileList
 
 def listDedup(dataList: list) -> list:
+    # 去重时使用列表推理，而不是转为set再转回list，保证对话顺序不变
     tempDataList = []
     [tempDataList.append(item) for item in dataList if item not in tempDataList]
 
