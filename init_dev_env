@@ -1,13 +1,22 @@
 #!/bin/bash
 
 # create python virtual environment
-if [ -n venv ]; then
+if [ -d "./venv" ]; then
     echo "venv already exists"
 else
     echo "Creating venv"
     python -m venv venv
-    source venv/Scripts/activate
 fi
+
+# activate venv
+case "$OSTYPE" in
+    linux-gnu)
+        source venv/bin/activate
+        ;;
+    *)
+        source venv/Scripts/activate
+        ;;
+esac
 
 pip install -r requirements.txt
 
