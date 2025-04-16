@@ -109,7 +109,6 @@ class Extractor:
                         print(f'Error processing RubyObject: {e}')
                         continue
                 self.dataQueue.put(atomObjList) # 数据放入队列
-                self.rubyObjList.extend(atomObjList)
 
             thread = threading.Thread(target=__processAndQueue, args=(fileData,))
             processThreads.append(thread)
@@ -126,13 +125,13 @@ class Extractor:
                 writeListToFile(data, file_name, first_write)
                 first_write = False
 
-        write_thread = threading.Thread(target=__writeToFile, args=('debug_files/atomRubyObjs.txt', self.dataQueue))
-        write_thread.start()
-        write_thread.join()
-
         # 将所有结果合并到 self.rubyObjList
         while not self.dataQueue.empty():
             self.rubyObjList.extend(self.dataQueue.get())
+
+        writeThread = threading.Thread(target=__writeToFile, args=('debug_files/atomRubyObjs.txt', self.dataQueue))
+        writeThread.start()
+        writeThread.join()
 
     def getDialogueFromRubyObjs(self):
         textDispList = []
