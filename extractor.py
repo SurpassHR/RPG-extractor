@@ -1,4 +1,6 @@
 import os
+import threading
+import queue
 from rubymarshal import reader
 from rubymarshal.classes import RubyObject, UserDef
 from typing import List, Any
@@ -10,7 +12,7 @@ class Extractor:
     def __init__(self, extractPath: str):
         self.extractPath = extractPath
         self.rubyObjList: List[RubyObject] = []
-        self.globalFirstWrite = True
+        self.dataQueue = queue.Queue()
 
     def _readRxdata(self, filePath: str) -> List[RubyObject]:
         ret = []
@@ -78,26 +80,59 @@ class Extractor:
     def procData(self):
         fileList = getFileListFromPath(self.extractPath, FileType.RXDATA)
         fileDataList = []
-        for file in fileList:
+
+        def __procFile(file: str, fileDataList: list):
             try:
                 fileDataList.append(self._readRxdata(file))
                 print(f'Succeed reading file {file}')
             except Exception as e:
                 print(f'Error reading file {file}: {e}')
-                continue
 
+        readFileThreads: List[threading.Thread] = []
+        for file in fileList:
+            thread = threading.Thread(target=__procFile, args=(file, fileDataList))
+            readFileThreads.append(thread)
+            thread.start()
+
+        for thread in readFileThreads:
+            thread.join()
+
+        # 多线程处理数据，写入队列
+        processThreads: List[threading.Thread] = []
         for fileData in fileDataList:
-            atomObjList: List[RubyObject] = []
-            for rubyObj in fileData:
-                try:
-                    atomObjList = self._traverseRubyObj(rubyObj)
-                except Exception as e:
-                    print(f'Error processing RubyObject: {e}')
-                    continue
-            printList(atomObjList, False)
-            writeListToFile(atomObjList, 'debug_files/atomRubyObjs.txt', firstWrite=self.globalFirstWrite)
-            self.globalFirstWrite = False
-            self.rubyObjList.extend(atomObjList)
+            def __processAndQueue(data):
+                atomObjList: List[RubyObject] = []
+                for rubyObj in data:
+                    try:
+                        atomObjList.extend(self._traverseRubyObj(rubyObj))
+                    except Exception as e:
+                        print(f'Error processing RubyObject: {e}')
+                        continue
+                self.dataQueue.put(atomObjList) # 数据放入队列
+                self.rubyObjList.extend(atomObjList)
+
+            thread = threading.Thread(target=__processAndQueue, args=(fileData,))
+            processThreads.append(thread)
+            thread.start()
+
+        for thread in processThreads:
+            thread.join()
+
+        # 单线程写入文件
+        def __writeToFile(file_name, data_queue):
+            first_write = True
+            while not data_queue.empty():
+                data = data_queue.get()
+                writeListToFile(data, file_name, first_write)
+                first_write = False
+
+        write_thread = threading.Thread(target=__writeToFile, args=('debug_files/atomRubyObjs.txt', self.dataQueue))
+        write_thread.start()
+        write_thread.join()
+
+        # 将所有结果合并到 self.rubyObjList
+        while not self.dataQueue.empty():
+            self.rubyObjList.extend(self.dataQueue.get())
 
     def getDialogueFromRubyObjs(self):
         textDispList = []
