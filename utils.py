@@ -1,4 +1,5 @@
 import os
+import threading
 from rubymarshal.classes import RubyString
 from definitions import FileType
 
@@ -11,15 +12,18 @@ def printList(dataList: list, needPrint: bool) -> None:
             print(item)
 
 LIST_WRITE_FILE_FLG = True
+file_lock = threading.Lock()
 def writeListToFile(dataList: list, fileName: str, firstWrite: bool) -> None:
     if not LIST_WRITE_FILE_FLG:
         return
-    if firstWrite and os.path.exists(fileName):
-        os.remove(fileName)
-    if dataList is not None and dataList != []:
-        with open(fileName, 'a') as f:
-            for item in dataList:
-                f.write(str(item) + '\n')
+
+    with file_lock:
+        if firstWrite and os.path.exists(fileName):
+            os.remove(fileName)
+        if dataList is not None and dataList != []:
+            with open(fileName, 'a') as f:
+                for item in dataList:
+                    f.write(str(item) + '\n')
 
 def traverseListBytesDecode(dataList: list) -> list:
     retList = []
@@ -46,8 +50,12 @@ def getFileListFromPath(extractPath: str, fileType: FileType) -> list:
     return fileList
 
 def listDedup(dataList: list) -> list:
-    # 去重时使用列表推理，而不是转为set再转回list，保证对话顺序不变
     tempDataList = []
     [tempDataList.append(item) for item in dataList if item not in tempDataList]
-
     return tempDataList
+
+def hashableListDedup(dataList: list) -> list:
+    return list(dict.fromkeys(dataList))
+
+def nonSeqListDedup(dataList: list) -> list:
+    return list(set(dataList))

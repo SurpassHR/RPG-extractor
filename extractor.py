@@ -4,7 +4,15 @@ from rubymarshal.classes import RubyObject, UserDef
 from typing import List, Any
 from definitions import FileType, RubyObjAttrCode
 
-from utils import printList, writeListToFile, traverseListBytesDecode, getFileListFromPath, listDedup
+from utils import (
+    printList,
+    writeListToFile,
+    traverseListBytesDecode,
+    getFileListFromPath,
+    hashableListDedup,
+    listDedup
+)
+
 from ruby_obj_formatter import RubyObjFormatter
 
 class Extractor(RubyObjFormatter):
@@ -80,8 +88,7 @@ class Extractor(RubyObjFormatter):
 
         return retList
 
-    def procData(self):
-        fileList = getFileListFromPath(self.extractPath, FileType.RXDATA)
+    def _getDataListFromFile(self, fileList: List[str]):
         fileDataList = []
         for file in fileList:
             try:
@@ -91,14 +98,25 @@ class Extractor(RubyObjFormatter):
                 print(f'Error reading file {file}: {e}')
                 continue
 
-        for fileData in fileDataList:
-            atomObjList: List[RubyObject] = []
-            for rubyObj in fileData:
-                try:
-                    atomObjList = self._traverseRubyObj(rubyObj)
-                except Exception as e:
-                    print(f'Error processing RubyObject: {e}')
-                    continue
+        return fileDataList
+
+    def _getAtomObjFromRubyObj(self, fileData: list) -> List[RubyObject]:
+        atomObjList: List[RubyObject] = []
+        for rubyObj in fileData:
+            try:
+                atomObjList.extend(self._traverseRubyObj(rubyObj))
+            except Exception as e:
+                print(f'Error processing RubyObject: {e}')
+                continue
+
+        return atomObjList
+
+    def procData(self):
+        fileList = getFileListFromPath(self.extractPath, FileType.RXDATA)
+        fileDataList = self._getDataListFromFile(fileList)
+
+        for i, fileData in enumerate(fileDataList):
+            atomObjList: List[RubyObject] = self._getAtomObjFromRubyObj(fileData)
             atomObjList = listDedup(atomObjList)
             printList(atomObjList, False)
             writeListToFile(atomObjList, 'debug_files/atomRubyObjs.txt', firstWrite=self.globalFirstWrite)
@@ -136,7 +154,9 @@ class Extractor(RubyObjFormatter):
             writeListToFile(dataList, fileName, firstWrite=True)
 
         # dialogueList = self.processRubyObjList(dialogueList)
+        dialogueList = hashableListDedup(dialogueList)
         __dedupDataListAndSaveDebugFile(dialogueList, 'debug_files/dialogue.txt')
+        optionList = listDedup(optionList)
         __dedupDataListAndSaveDebugFile(optionList, 'debug_files/option.txt')
 
 def testExtractRxdataInFolder(folderPath: str):
