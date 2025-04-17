@@ -10,15 +10,12 @@ from utils import (
     traverseListBytesDecode,
     getFileListFromPath,
     hashableListDedup,
-    listDedup
+    listDedup,
+    sentenceJoint
 )
 
-from ruby_obj_formatter import RubyObjFormatter
-
-class Extractor(RubyObjFormatter):
+class Extractor:
     def __init__(self, extractPath: str) -> None:
-        RubyObjFormatter.__init__(self)
-
         self.extractPath = extractPath
         self.rubyObjList: List[RubyObject] = []
         self.globalFirstWrite = True
@@ -137,13 +134,13 @@ class Extractor(RubyObjFormatter):
                 if code == RubyObjAttrCode.TEXT_DISP or code == RubyObjAttrCode.TITLE:
                     dialogue = content[0].decode('utf-8') if isinstance(content[0], bytes) else content[0]
                     dialogueList.append(dialogue)
-                if code == RubyObjAttrCode.TEXT_DISP:
+                elif code == RubyObjAttrCode.TEXT_DISP:
                     textDisp = content[0].decode('utf-8') if isinstance(content[0], bytes) else content[0]
                     textDispList.append(textDisp)
-                if code == RubyObjAttrCode.TITLE:
+                elif code == RubyObjAttrCode.TITLE:
                     title = content[0].decode('utf-8') if isinstance(content[0], bytes) else content[0]
                     titleList.append(title)
-                if code == RubyObjAttrCode.OPTION:
+                elif code == RubyObjAttrCode.OPTION:
                     option = content[0]
                     if isinstance(content[0], list):
                         option = traverseListBytesDecode(option)
@@ -153,7 +150,7 @@ class Extractor(RubyObjFormatter):
             printList(dataList, False)
             writeListToFile(dataList, fileName, firstWrite=True)
 
-        # dialogueList = self.processRubyObjList(dialogueList)
+        dialogueList = sentenceJoint(dialogueList)
         dialogueList = hashableListDedup(dialogueList)
         __dedupDataListAndSaveDebugFile(dialogueList, 'debug_files/dialogue.txt')
         optionList = listDedup(optionList)
