@@ -1,38 +1,35 @@
 import os
-from rubymarshal import reader
 from rubymarshal.classes import RubyObject, UserDef
 from typing import List, Any
-from definitions import FileType, RubyObjAttrCode
 
-from utils import (
+from tools.definitions import (
+    FileExt,
+    ReFileType,
+    RubyObjAttrCode,
+)
+from tools.formatter import Formatter
+from tools.exporter import Exporter
+from tools.utils import (
     printList,
     writeListToFile,
     traverseListBytesDecode,
     getFileListFromPath,
     hashableListDedup,
-    listDedup,
-    sentenceJoint
+    listDedup
 )
+from tools.reader import RxdataReader
 
 class Extractor:
-    def __init__(self, extractPath: str) -> None:
+    def __init__(self, extractPath: str):
         self.extractPath = extractPath
         self.rubyObjList: List[RubyObject] = []
+        self.scriptsRxdata = []
+        self.doodasRxdata: Any = None
+        self.commonRxdata = []
         self.globalFirstWrite = True
-
-        return
-
-    def _readRxdata(self, filePath: str) -> List[RubyObject]:
-        ret = []
-        with open(filePath, 'rb') as f:
-            data = reader.load(f)
-            if isinstance(data, RubyObject):
-                ret.append(data)
-            elif isinstance(data, list):
-                ret.append(data[1])
-            pass
-
-        return ret
+        self.formatter = Formatter()
+        self.exporter = Exporter()
+        self.reader = RxdataReader()
 
     def _hasDeeperRubyObj(self, obj: RubyObject):
         rubyObjAttrs = obj.attributes
@@ -85,20 +82,26 @@ class Extractor:
 
         return retList
 
-    def _getDataListFromFile(self, fileList: List[str]):
-        fileDataList = []
+    def _readDataListFromFile(self, fileList: List[str]):
         for file in fileList:
+            fileName = os.path.basename(file)
             try:
-                fileDataList.append(self._readRxdata(file))
-                print(f'Succeed reading file {file}')
+                self.reader.readRxdata(file)
+                # print(f'Succeed reading file {fileName}')
             except Exception as e:
-                print(f'Error reading file {file}: {e}')
+                print(f'Error reading file {fileName}: {e}')
                 continue
 
-        return fileDataList
+        self.scriptsRxdata = self.reader.getRxdata(ReFileType.SCRIPTS)
+        self.doodasRxdata = self.reader.getRxdata(ReFileType.DOODAS)
+        self.commonRxdata = self.reader.getRxdata(ReFileType.COMMON)
+        self.reader.clearRxdata()
 
-    def _getAtomObjFromRubyObj(self, fileData: list) -> List[RubyObject]:
+    def _getAtomObjFromRubyObj(self, fileData) -> List[RubyObject]:
         atomObjList: List[RubyObject] = []
+        if isinstance(fileData, RubyObject):
+            atomObjList.extend(self._traverseRubyObj(fileData))
+            return atomObjList
         for rubyObj in fileData:
             try:
                 atomObjList.extend(self._traverseRubyObj(rubyObj))
@@ -109,16 +112,19 @@ class Extractor:
         return atomObjList
 
     def procData(self):
-        fileList = getFileListFromPath(self.extractPath, FileType.RXDATA)
-        fileDataList = self._getDataListFromFile(fileList)
+        fileList = getFileListFromPath(self.extractPath, FileExt.RXDATA)
+        self._readDataListFromFile(fileList)
 
-        for i, fileData in enumerate(fileDataList):
+        for fileData in self.commonRxdata:
             atomObjList: List[RubyObject] = self._getAtomObjFromRubyObj(fileData)
             atomObjList = listDedup(atomObjList)
             printList(atomObjList, False)
             writeListToFile(atomObjList, 'debug_files/atomRubyObjs.txt', firstWrite=self.globalFirstWrite)
             self.globalFirstWrite = False
             self.rubyObjList.extend(atomObjList)
+
+        self.exporter.exportToRb(list(self.scriptsRxdata), 'debug_files/scripts.rb')
+        self.exporter.exportToRb(self.doodasRxdata, 'debug_files/doodas.rb')
 
     def getDialogueFromRubyObjs(self):
         textDispList = []
@@ -146,15 +152,16 @@ class Extractor:
                         option = traverseListBytesDecode(option)
                     optionList.append(option)
 
-        def __dedupDataListAndSaveDebugFile(dataList: list, fileName: str):
+        def __SaveDebugFile(dataList: list, fileName: str):
             printList(dataList, False)
             writeListToFile(dataList, fileName, firstWrite=True)
+            self.exporter.exportListToJson(dataList, fileName.split('.')[0] + '.json')
 
-        dialogueList = sentenceJoint(dialogueList)
+        dialogueList = self.formatter.sentenceJoint(dialogueList)
         dialogueList = hashableListDedup(dialogueList)
-        __dedupDataListAndSaveDebugFile(dialogueList, 'debug_files/dialogue.txt')
+        __SaveDebugFile(dialogueList, 'debug_files/dialogue.txt')
         optionList = listDedup(optionList)
-        __dedupDataListAndSaveDebugFile(optionList, 'debug_files/option.txt')
+        __SaveDebugFile(optionList, 'debug_files/option.txt')
 
 def testExtractRxdataInFolder(folderPath: str):
     extractor = Extractor(folderPath)
