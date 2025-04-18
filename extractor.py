@@ -15,13 +15,15 @@ from tools.utils import (
     traverseListBytesDecode,
     getFileListFromPath,
     hashableListDedup,
-    listDedup
+    listDedup,
+    loadConfig
 )
 from tools.reader import RxdataReader
 
 class Extractor:
-    def __init__(self, extractPath: str):
-        self.extractPath = extractPath
+    def __init__(self, gameDataFolder: str, outputDataFolder: str):
+        self.gameDataFolder = gameDataFolder
+        self.outputDataFolder = outputDataFolder
         self.rubyObjList: List[RubyObject] = []
         self.scriptsRxdata = []
         self.doodasRxdata: Any = None
@@ -112,19 +114,19 @@ class Extractor:
         return atomObjList
 
     def procData(self):
-        fileList = getFileListFromPath(self.extractPath, FileExt.RXDATA)
+        fileList = getFileListFromPath(self.gameDataFolder, FileExt.RXDATA)
         self._readDataListFromFile(fileList)
 
         for fileData in self.commonRxdata:
             atomObjList: List[RubyObject] = self._getAtomObjFromRubyObj(fileData)
             atomObjList = listDedup(atomObjList)
             printList(atomObjList, False)
-            writeListToFile(atomObjList, 'debug_files/atomRubyObjs.txt', firstWrite=self.globalFirstWrite)
+            writeListToFile(atomObjList, f'{self.outputDataFolder}/atomRubyObjs.txt', firstWrite=self.globalFirstWrite)
             self.globalFirstWrite = False
             self.rubyObjList.extend(atomObjList)
 
-        self.exporter.exportToRb(list(self.scriptsRxdata), 'debug_files/scripts.rb')
-        self.exporter.exportToRb(self.doodasRxdata, 'debug_files/doodas.rb')
+        self.exporter.exportToRb(list(self.scriptsRxdata), f'{self.outputDataFolder}/scripts.rb')
+        self.exporter.exportToRb(self.doodasRxdata, f'{self.outputDataFolder}/doodas.rb')
 
     def getDialogueFromRubyObjs(self):
         textDispList = []
@@ -159,16 +161,20 @@ class Extractor:
 
         dialogueList = self.formatter.sentenceJoint(dialogueList)
         dialogueList = hashableListDedup(dialogueList)
-        __SaveDebugFile(dialogueList, 'debug_files/dialogue.txt')
+        __SaveDebugFile(dialogueList, f'{self.outputDataFolder}/dialogue.txt')
         optionList = listDedup(optionList)
-        __SaveDebugFile(optionList, 'debug_files/option.txt')
+        __SaveDebugFile(optionList, f'{self.outputDataFolder}/option.txt')
 
-def testExtractRxdataInFolder(folderPath: str):
-    extractor = Extractor(folderPath)
+def testExtractRxdataInFolder():
+    config = loadConfig()
+
+    gameDataFolder = os.path.join(os.getcwd(), config.get('game_data_dir', 'example_data'))
+    outputDataFolder = config.get('output_data_dir', 'debug_files')
+
+    extractor = Extractor(gameDataFolder, outputDataFolder)
     extractor.procData()
     extractor.getDialogueFromRubyObjs()
 
 if __name__ == '__main__':
-    folderName = 'example_data'
-    dataPath = os.path.join(os.getcwd(), folderName)
-    testExtractRxdataInFolder(dataPath)
+
+    testExtractRxdataInFolder()

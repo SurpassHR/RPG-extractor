@@ -7,7 +7,7 @@ This is a tool for extracting RPG(Role Playing Game) related data that has `.rxd
 ## Usage
 
 ```shell
-bash ./init_dev_env
+bash ./init_dev_env.sh
 python ./extractor.py
 ```
 

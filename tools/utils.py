@@ -21,8 +21,11 @@ def writeListToFile(dataList: list, fileName: str, firstWrite: bool) -> None:
         return
 
     with file_lock:
-        if firstWrite and os.path.exists(fileName):
-            os.remove(fileName)
+        if firstWrite:
+            if os.path.exists(fileName):
+                os.remove(fileName)
+            if not os.path.exists(os.path.dirname(fileName)):
+                os.mkdir(os.path.dirname(fileName))
         if dataList is not None and dataList != []:
             with open(fileName, 'a') as f:
                 for item in dataList:
@@ -78,3 +81,10 @@ def readJson(filePath: str) -> dict:
     with open(filePath, 'r', encoding='utf-8') as jsonFile:
         jsonContent = json.load(jsonFile)
     return jsonContent
+
+def loadConfig() -> dict:
+    configFilePath = os.path.join('.', 'config.json')
+    if not os.path.exists(configFilePath):
+        raise FileNotFoundError(f"Config file not found: {configFilePath}")
+
+    return readJson(configFilePath)
