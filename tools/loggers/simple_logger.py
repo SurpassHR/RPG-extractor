@@ -18,9 +18,6 @@ LOG_LEVEL_AND_COLOR_MATCH: Dict[LogLevels, ANSIColors] = {
     LogLevels.CRITICAL: ANSIColors.COLOR_BRIGHT_MAGENTA,
 }
 
-def _getLineNumber() -> str:
-    return str(inspect.currentframe().f_back.f_lineno) # type: ignore
-
 def loggerPrint(msg, level: LogLevels = LogLevels.INFO) -> None:
     colorStr: str = LOG_LEVEL_AND_COLOR_MATCH.get(level, ANSIColors.COLOR_RESET).value
     resetColorStr: str = ANSIColors.COLOR_RESET.value
@@ -28,8 +25,9 @@ def loggerPrint(msg, level: LogLevels = LogLevels.INFO) -> None:
 
     currTimeStr: str = ANSIColors.COLOR_BRIGHT_BLUE.value + getCurrTime() + ANSIColors.COLOR_RESET.value + '\t'
 
-    fileNameStr: str = os.path.realpath(os.path.basename(__file__))
-    lineNoStr: str = _getLineNumber()
+    frame = inspect.stack()[1]
+    fileNameStr: str = os.path.abspath(frame.filename)
+    lineNoStr: str = str(frame.lineno)
     fileContext: str = fileNameStr + ':' + lineNoStr + '\t'
 
     print(currTimeStr + fileContext + levelStr + msg, sep='')

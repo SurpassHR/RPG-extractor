@@ -11,7 +11,10 @@ def isFolder(path: str) -> bool:
     return os.path.isdir(path)
 
 def isFile(path: str) -> bool:
-    return os.path.isfile(path)
+    isFile = os.path.isfile(path)
+    if not isFile:
+        loggerPrint(f'Path {path} is not a file.', level=LogLevels.WARNING)
+    return isFile
 
 def getFileName(path: str) -> str:
     return os.path.basename(path)
@@ -41,3 +44,14 @@ def getBufferedReader(path: str, bufferSize: int = 1024) -> object:
     if not isFileExists(path):
         return None
     return open(path, 'rb', buffering=bufferSize)
+
+def isFileInListValid(fileList: list[str]) -> bool:
+    if fileList is None or len(fileList) == 0:
+        loggerPrint('File list is empty.', level=LogLevels.WARNING)
+        return False
+
+    for filePath in fileList:
+        if not isFileExists(filePath):
+            loggerPrint(f'File {filePath} does not exist.', level=LogLevels.WARNING)
+            return False
+    return True

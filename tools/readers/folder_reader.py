@@ -9,7 +9,7 @@ from tools.public_def.level_defs import LogLevels
 from tools.readers.reader_utils import (
     isFolderExists,
     isFile,
-    getFileExt
+    getFileExt,
 )
 
 def getAllFilesFromFolder(folderPath: str) -> list[str]:
@@ -17,6 +17,7 @@ def getAllFilesFromFolder(folderPath: str) -> list[str]:
         return []
 
     fileList = os.listdir(folderPath)
+    fileList = [os.path.join(folderPath, file) for file in fileList]
     loggerPrint(f'Folder {folderPath} contains {len(fileList)} files.', level=LogLevels.INFO)
 
     return fileList
@@ -28,7 +29,7 @@ def getFilesInFolderByType(folderPath: str, fileExt: str) -> list[str]:
 
     return fileList
 
-def getFileInFolderByTypes(folderPath: str, fileExts: list[str]) -> list[str]:
+def getFilesInFolderByTypes(folderPath: str, fileExts: list[str]) -> list[str]:
     ret: list[str] = []
     for ext in fileExts:
         ret.extend(getFilesInFolderByType(folderPath, ext))

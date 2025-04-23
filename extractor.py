@@ -2,13 +2,12 @@ import os
 import sys
 from pathlib import Path
 from rubymarshal.classes import RubyObject, UserDef
-from typing import List, Any
+from typing import Any
 
 sys.path.append(str(Path(__file__).resolve().parent.parent.parent))
 
-from tools.readers.rubymarshal_reader.definitions import (
+from tools.public_def.reader_defs import (
     FileExt,
-    ReFileType,
     RubyObjAttrCode,
 )
 from tools.formatter import Formatter
@@ -22,26 +21,26 @@ from tools.utils import (
     loadConfig
 )
 from tools.readers.rubymarshal_reader.rxdata_reader import RxdataReader
-from tools.readers.folder_reader import getFilesInFolderByType
+from tools.readers.folder_reader import (
+    getFilesInFolderByTypes,
+)
+from tools.loggers.simple_logger import loggerPrint
 
 class Extractor:
-    def __init__(self, gameDataFolder: str, outputDataFolder: str):
+    def __init__(self, gameDataFolder: str, outputDataFolder: str, targetFileExt: list[str] = [FileExt.RXDATA.value]) -> None:
         self.gameDataFolder = gameDataFolder
         self.outputDataFolder = outputDataFolder
-        self.rubyObjList: List[RubyObject] = []
-        self.scriptsRxdata = []
-        self.doodasRxdata: Any = None
-        self.commonRxdata = []
+        self.rubyObjList: list[RubyObject] = []
         self.globalFirstWrite = True
         self.formatter = Formatter()
         self.exporter = Exporter()
-        self.reader = RxdataReader()
+        self.reader = RxdataReader(getFilesInFolderByTypes(self.gameDataFolder, targetFileExt))
 
     def _hasDeeperRubyObj(self, obj: RubyObject):
         rubyObjAttrs = obj.attributes
         return 'RubyObject' in str(rubyObjAttrs)
 
-    def _traverseRubyObj(self, obj: RubyObject | Any) -> List[RubyObject]:
+    def _traverseRubyObj(self, obj: RubyObject | Any) -> list[RubyObject]:
         if isinstance(obj, UserDef):
             return []
 
@@ -88,23 +87,8 @@ class Extractor:
 
         return retList
 
-    def _readDataListFromFile(self, fileList: List[str]):
-        for file in fileList:
-            fileName = os.path.basename(file)
-            try:
-                self.reader.read(file)
-                # print(f'Succeed reading file {fileName}')
-            except Exception as e:
-                print(f'Error reading file {fileName}: {e}')
-                continue
-
-        self.scriptsRxdata = self.reader.getRxdata(ReFileType.SCRIPTS)
-        self.doodasRxdata = self.reader.getRxdata(ReFileType.DOODAS)
-        self.commonRxdata = self.reader.getRxdata(ReFileType.COMMON)
-        self.reader.clearRxdata()
-
-    def _getAtomObjFromRubyObj(self, fileData) -> List[RubyObject]:
-        atomObjList: List[RubyObject] = []
+    def _getAtomObjFromRubyObj(self, fileData) -> list[RubyObject]:
+        atomObjList: list[RubyObject] = []
         if isinstance(fileData, RubyObject):
             atomObjList.extend(self._traverseRubyObj(fileData))
             return atomObjList
@@ -112,25 +96,25 @@ class Extractor:
             try:
                 atomObjList.extend(self._traverseRubyObj(rubyObj))
             except Exception as e:
-                print(f'Error processing RubyObject: {e}')
+                loggerPrint(f'Error processing RubyObject: {e}')
                 continue
 
         return atomObjList
 
     def procData(self):
-        fileList = getFilesInFolderByType(self.gameDataFolder, FileExt.RXDATA.value)
-        self._readDataListFromFile(fileList)
+        self.reader.read()
+        scriptsRxdata, doodasRxdata, commonRxdata = self.reader.getData()
 
-        for fileData in self.commonRxdata:
-            atomObjList: List[RubyObject] = self._getAtomObjFromRubyObj(fileData)
+        for fileData in commonRxdata:
+            atomObjList: list[RubyObject] = self._getAtomObjFromRubyObj(fileData)
             atomObjList = listDedup(atomObjList)
             printList(atomObjList, False)
             writeListToFile(atomObjList, f'{self.outputDataFolder}/atomRubyObjs.txt', firstWrite=self.globalFirstWrite)
             self.globalFirstWrite = False
             self.rubyObjList.extend(atomObjList)
 
-        self.exporter.exportToRb(list(self.scriptsRxdata), f'{self.outputDataFolder}/scripts.rb')
-        self.exporter.exportToRb(self.doodasRxdata, f'{self.outputDataFolder}/doodas.rb')
+        self.exporter.exportToRb(list(scriptsRxdata), f'{self.outputDataFolder}/scripts.rb')
+        self.exporter.exportToRb([doodasRxdata], f'{self.outputDataFolder}/doodas.rb')
 
     def getDialogueFromRubyObjs(self):
         textDispList = []
@@ -180,5 +164,4 @@ def testExtractRxdataInFolder():
     extractor.getDialogueFromRubyObjs()
 
 if __name__ == '__main__':
-
     testExtractRxdataInFolder()
