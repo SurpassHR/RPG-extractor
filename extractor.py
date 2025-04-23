@@ -1,8 +1,12 @@
 import os
+import sys
+from pathlib import Path
 from rubymarshal.classes import RubyObject, UserDef
 from typing import List, Any
 
-from tools.definitions import (
+sys.path.append(str(Path(__file__).resolve().parent.parent.parent))
+
+from tools.readers.rubymarshal_reader.definitions import (
     FileExt,
     ReFileType,
     RubyObjAttrCode,
@@ -13,12 +17,12 @@ from tools.utils import (
     printList,
     writeListToFile,
     traverseListBytesDecode,
-    getFileListFromPath,
     hashableListDedup,
     listDedup,
     loadConfig
 )
-from tools.reader import RxdataReader
+from tools.readers.rubymarshal_reader.rxdata_reader import RxdataReader
+from tools.readers.folder_reader import getFilesInFolderByType
 
 class Extractor:
     def __init__(self, gameDataFolder: str, outputDataFolder: str):
@@ -88,7 +92,7 @@ class Extractor:
         for file in fileList:
             fileName = os.path.basename(file)
             try:
-                self.reader.readRxdata(file)
+                self.reader.read(file)
                 # print(f'Succeed reading file {fileName}')
             except Exception as e:
                 print(f'Error reading file {fileName}: {e}')
@@ -114,7 +118,7 @@ class Extractor:
         return atomObjList
 
     def procData(self):
-        fileList = getFileListFromPath(self.gameDataFolder, FileExt.RXDATA)
+        fileList = getFilesInFolderByType(self.gameDataFolder, FileExt.RXDATA.value)
         self._readDataListFromFile(fileList)
 
         for fileData in self.commonRxdata:

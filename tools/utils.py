@@ -1,12 +1,16 @@
 # some reusable public function
 
 import os
+import sys
+import re
 import threading
 import zlib
 import json
+from pathlib import Path
+from typing import Dict
 from rubymarshal.classes import RubyString
 
-from .definitions import FileExt
+sys.path.append(str(Path(__file__).resolve().parent.parent.parent))
 
 PRINT_LIST_FLG = False
 def printList(dataList: list, needPrint: bool) -> None:
@@ -77,15 +81,6 @@ def traverseListBytesDecode(dataList: list) -> list:
 
     return retList
 
-def getFileListFromPath(extractPath: str, fileType: FileExt) -> list:
-    fileExt = fileType.value
-    fileList = os.listdir(extractPath)
-    fileList = [file for file in fileList if os.path.splitext(file)[1] == fileExt]
-    fileList = [os.path.join(extractPath, file) for file in fileList]
-    # fileList = [r'E:\code\my-code\RPG-data-extractor\example_data\Map011_doodads.rxdata']
-
-    return fileList
-
 def listDedup(dataList: list) -> list:
     tempDataList = []
     [tempDataList.append(item) for item in dataList if item not in tempDataList]
@@ -108,3 +103,9 @@ def loadConfig() -> dict:
         raise FileNotFoundError(f"Config file not found: {configFilePath}")
 
     return readJson(configFilePath)
+
+def execMultiReSub(patDict: Dict[re.Pattern, str], input: str):
+    res = input
+    for key in patDict:
+        res = re.sub(key, patDict[key], res)
+    return res
