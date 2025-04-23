@@ -24,4 +24,8 @@ python ./extractor.py
 
 - [ ] Merge my another format module into this
 
+- [ ] GUI
+
+- [ ] Make reader module more extensible to support other format like json
+
 ---
