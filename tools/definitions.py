@@ -4,6 +4,7 @@ from enum import Enum, StrEnum, IntEnum
 class FileExt(StrEnum):
     RXDATA = '.rxdata'
     RVDATA = '.rvdata'
+    JSON   = '.json'
 
 class ReFileType(Enum):
     SCRIPTS = re.compile('Scripts.rxdata')

@@ -1,3 +1,5 @@
+# some reusable public function
+
 import os
 import threading
 import zlib
