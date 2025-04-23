@@ -16,6 +16,14 @@ def printList(dataList: list, needPrint: bool) -> None:
         for item in dataList:
             print(item)
 
+PRINT_DICT_FLG = True
+def printDict(dataDict: dict, needPrint: bool) -> None:
+    if not PRINT_DICT_FLG and not needPrint:
+        return
+    if dataDict is not None and dataDict != {}:
+        for key, value in dataDict.items():
+            print(f"{key}: {value}")
+
 LIST_WRITE_FILE_FLG = True
 file_lock = threading.Lock()
 def writeListToFile(dataList: list, fileName: str, firstWrite: bool) -> None:
@@ -32,6 +40,16 @@ def writeListToFile(dataList: list, fileName: str, firstWrite: bool) -> None:
             with open(fileName, 'a') as f:
                 for item in dataList:
                     f.write(str(item) + '\n')
+
+def writeDictToJsonFile(dataDict: dict, fileName: str) -> None:
+    with file_lock:
+        if os.path.exists(fileName):
+            os.remove(fileName)
+        if not os.path.exists(os.path.dirname(fileName)):
+            os.mkdir(os.path.dirname(fileName))
+    if dataDict is not None and dataDict != {}:
+        with open(fileName, 'a') as f:
+            json.dump(dataDict, f, ensure_ascii=False, indent=4)
 
 def traverseListBytesDecode(dataList: list) -> list:
     def __decode(item) -> str:
