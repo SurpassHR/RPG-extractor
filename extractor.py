@@ -27,7 +27,11 @@ from tools.readers.folder_reader import (
 from tools.loggers.simple_logger import loggerPrint
 
 class Extractor:
-    def __init__(self, gameDataFolder: str, outputDataFolder: str, targetFileExt: list[str] = [FileExt.RXDATA.value]) -> None:
+    def __init__(self,
+                 gameDataFolder: str,
+                 outputDataFolder: str,
+                 targetFileExt: list[str] = [FileExt.RXDATA.value]
+    ) -> None:
         self.gameDataFolder = gameDataFolder
         self.outputDataFolder = outputDataFolder
         self.rubyObjList: list[RubyObject] = []
