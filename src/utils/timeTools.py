@@ -1,5 +1,3 @@
-# Utilities for processing time
-
 from datetime import datetime
 
 def getCurrTime() -> str:
