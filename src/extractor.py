@@ -1,3 +1,5 @@
+from typing import Optional
+
 from src.loggers.simpleLogger import loggerPrint
 from src.utils.autoRegister import ClassManager
 from src.utils.fileTools import getAllFilesFromFolder, getFileExt, getFilesInFolderByType
@@ -15,15 +17,15 @@ class Extractor:
         self.fileList: list[str] = []
         self.targetFileExt: str = ''
 
-        self.reader: ReaderBase = None
-        self.parser: ParserBase = None
-        self.formatter: FormatterBase = None
-        self.exporter: ExporterBase = None
+        self.reader: Optional[ReaderBase] = None
+        self.parser: Optional[ParserBase] = None
+        self.formatter: Optional[FormatterBase] = None
+        self.exporter: Optional[ExporterBase] = None
 
         self._init()
 
     # 推断目标文件拓展名
-    def _inferFileExt(self) -> str:
+    def _inferFileExt(self):
         fileList = getAllFilesFromFolder(self.dataFolder)
         fileExtNum: dict[str, int] = {}
         if len(fileList) != 0:
@@ -45,17 +47,25 @@ class Extractor:
         fileExt = self.targetFileExt.capitalize()
 
         self.fileList = getFilesInFolderByType(self.dataFolder, self.targetFileExt)
-        self.reader = self.classManager.getReader(fileExt)(self.fileList)
-        loggerPrint(f"Use Reader '{self.reader.__class__.__name__}'")
+        readerCls = self.classManager.getReader(fileExt)
+        if readerCls:
+            self.reader = readerCls(self.fileList)
+            loggerPrint(f"Use Reader '{self.reader.__class__.__name__}'")
 
-        self.parser = self.classManager.getParser(fileExt)()
-        loggerPrint(f"Use Parser '{self.parser.__class__.__name__}'")
+        parserCls = self.classManager.getParser(fileExt)
+        if parserCls:
+            self.parser = parserCls()
+            loggerPrint(f"Use Parser '{self.parser.__class__.__name__}'")
 
-        self.formatter = self.classManager.getFormatter(fileExt)()
-        loggerPrint(f"Use Formatter '{self.formatter.__class__.__name__}'")
+        formatterCls = self.classManager.getFormatter(fileExt)
+        if formatterCls:
+            self.formatter = formatterCls()
+            loggerPrint(f"Use Formatter '{self.formatter.__class__.__name__}'")
 
-        self.exporter = self.classManager.getExporter(fileExt)()
-        loggerPrint(f"Use Exporter '{self.exporter.__class__.__name__}'")
+        exporterCls = self.classManager.getExporter(fileExt)
+        if exporterCls:
+            self.exporter = exporterCls()
+            loggerPrint(f"Use Exporter '{self.exporter.__class__.__name__}'")
 
     def _init(self):
         self._inferFileExt()
