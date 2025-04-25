@@ -85,4 +85,4 @@ class Extractor:
         self._initProcessers()
 
     def extract(self):
-        pass
+        readData = self.reader.read()

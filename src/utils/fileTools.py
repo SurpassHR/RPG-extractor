@@ -1,7 +1,5 @@
 import os
 import json
-from src.loggers.simpleLogger import loggerPrint
-from src.publicDef.levelDefs import LogLevels
 
 def readJson(filePath: str) -> dict:
     with open(filePath, 'r', encoding='utf-8') as jsonFile:
@@ -12,10 +10,7 @@ def isFolder(path: str) -> bool:
     return os.path.isdir(path)
 
 def isFile(path: str) -> bool:
-    isFile = os.path.isfile(path)
-    if not isFile:
-        loggerPrint(f'Path {path} is not a file.', level=LogLevels.WARNING)
-    return isFile
+    return os.path.isfile(path)
 
 def getFileName(path: str) -> str:
     return os.path.basename(path)
@@ -30,16 +25,10 @@ def isPathExists(path: str) -> bool:
     return os.path.exists(path)
 
 def isFolderExists(path: str) -> bool:
-    if not isFolder(path):
-        loggerPrint(f'Path {path} is not a folder.', level=LogLevels.WARNING)
-        return False
-    return isPathExists(path)
+    return os.path.isdir(path) and os.path.exists(path)
 
 def isFileExists(path: str) -> bool:
-    if not isFile(path):
-        loggerPrint(f'Path {path} is not a file.', level=LogLevels.WARNING)
-        return False
-    return isPathExists(path)
+    return os.path.isfile(path) and os.path.exists(path)
 
 def getBufferedReader(path: str, bufferSize: int = 1024) -> object:
     if not isFileExists(path):
@@ -48,12 +37,10 @@ def getBufferedReader(path: str, bufferSize: int = 1024) -> object:
 
 def isFileInListValid(fileList: list[str]) -> bool:
     if fileList is None or len(fileList) == 0:
-        loggerPrint('File list is empty.', level=LogLevels.WARNING)
         return False
 
     for filePath in fileList:
         if not isFileExists(filePath):
-            loggerPrint(f'File {filePath} does not exist.', level=LogLevels.WARNING)
             return False
     return True
 
@@ -63,7 +50,6 @@ def getAllFilesFromFolder(folderPath: str) -> list[str]:
 
     fileList = os.listdir(folderPath)
     fileList = [os.path.join(folderPath, file) for file in fileList]
-    loggerPrint(f'Folder `{folderPath}` contains {len(fileList)} files.', level=LogLevels.INFO)
 
     return fileList
 

@@ -1,9 +1,9 @@
-from enum import StrEnum
+from enum import IntEnum
 
 # log levels
-class LogLevels(StrEnum):
-    DEBUG       = "DEBUG"
-    INFO        = "INFO"
-    WARNING     = "WARNING"
-    ERROR       = "ERROR"
-    CRITICAL    = "CRITICAL"
+class LogLevels(IntEnum):
+    DEBUG       = 0
+    INFO        = 1
+    WARNING     = 2
+    ERROR       = 3
+    CRITICAL    = 4

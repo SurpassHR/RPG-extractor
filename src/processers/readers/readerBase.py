@@ -1,4 +1,4 @@
-from src.loggers.simpleLogger import loggerPrint
+from typing import Any
 from src.utils.autoRegister import AutoRegisterBase
 
 class ReaderBase(AutoRegisterBase):
@@ -8,5 +8,5 @@ class ReaderBase(AutoRegisterBase):
     def read(self):
         pass
 
-    def get(self):
+    def get(self) -> Any:
         pass

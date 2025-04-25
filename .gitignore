@@ -4,3 +4,4 @@ __pycache__
 venv
 debug_files/atomRubyObjs.txt -diff
 output_files/
+logs/
