@@ -55,7 +55,7 @@ class ClassManager:
 
     @classmethod
     def listExporters(cls):
-        loggerPrint(f"{cls.getExporter}")
+        loggerPrint(f"{cls._exporters}")
 
 # 定义一个元类
 class AutoRegisterMeta(type):

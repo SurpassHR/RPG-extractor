@@ -1,5 +1,6 @@
 from typing import Optional
 
+from src.publicDef.levelDefs import LogLevels
 from src.loggers.simpleLogger import loggerPrint
 from src.utils.autoRegister import ClassManager
 from src.utils.fileTools import getAllFilesFromFolder, getFileExt, getFilesInFolderByType
@@ -51,21 +52,33 @@ class Extractor:
         if readerCls:
             self.reader = readerCls(self.fileList)
             loggerPrint(f"Use Reader '{self.reader.__class__.__name__}'")
+        else:
+            loggerPrint(f"Procsr '{self.targetFileExt}Reader' not found.", level=LogLevels.CRITICAL)
+            exit(-1)
 
         parserCls = self.classManager.getParser(fileExt)
         if parserCls:
             self.parser = parserCls()
             loggerPrint(f"Use Parser '{self.parser.__class__.__name__}'")
+        else:
+            loggerPrint(f"Procsr '{self.targetFileExt}Parser' not found.", level=LogLevels.CRITICAL)
+            exit(-1)
 
         formatterCls = self.classManager.getFormatter(fileExt)
         if formatterCls:
             self.formatter = formatterCls()
             loggerPrint(f"Use Formatter '{self.formatter.__class__.__name__}'")
+        else:
+            loggerPrint(f"Procsr '{self.targetFileExt}Formatter' not found.", level=LogLevels.CRITICAL)
+            exit(-1)
 
         exporterCls = self.classManager.getExporter(fileExt)
         if exporterCls:
             self.exporter = exporterCls()
             loggerPrint(f"Use Exporter '{self.exporter.__class__.__name__}'")
+        else:
+            loggerPrint(f"Procsr '{self.targetFileExt}Exporter' not found.", level=LogLevels.CRITICAL)
+            exit(-1)
 
     def _init(self):
         self._inferFileExt()
