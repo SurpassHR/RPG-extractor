@@ -1,5 +1,6 @@
 import os
 import json
+import threading
 
 def readJson(filePath: str) -> dict:
     with open(filePath, 'r', encoding='utf-8') as jsonFile:
@@ -20,6 +21,9 @@ def getFileNameWithoutExt(path) -> str:
 
 def getFileExt(path: str) -> str:
     return os.path.splitext(path)[1].replace('.', '')
+
+def getFileParentFolder(path: str) -> str:
+    return os.path.split(os.path.dirname(path))[-1]
 
 def isPathExists(path: str) -> bool:
     return os.path.exists(path)
@@ -66,3 +70,26 @@ def getFilesInFolderByTypes(folderPath: str, fileExts: list[str]) -> list[str]:
         ret.extend(getFilesInFolderByType(folderPath, ext))
 
     return ret
+
+file_lock = threading.Lock()
+def writeListToFile(dataList: list, fileName: str, firstWrite: bool = True) -> None:
+    with file_lock:
+        if firstWrite:
+            if os.path.exists(fileName):
+                os.remove(fileName)
+            if not os.path.exists(os.path.dirname(fileName)):
+                os.makedirs(os.path.dirname(fileName))
+        if dataList is not None and dataList != []:
+            with open(fileName, 'a') as f:
+                for item in dataList:
+                    f.write(str(item) + '\n')
+
+def writeDictToJsonFile(dataDict: dict, fileName: str) -> None:
+    with file_lock:
+        if os.path.exists(fileName):
+            os.remove(fileName)
+        if not os.path.exists(os.path.dirname(fileName)):
+            os.makedirs(os.path.dirname(fileName))
+    if dataDict is not None and dataDict != {}:
+        with open(fileName, 'a') as f:
+            json.dump(dataDict, f, ensure_ascii=False, indent=4)

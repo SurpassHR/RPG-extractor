@@ -70,7 +70,7 @@ def _printFormatted(msg, level, frame):
 
     # 文件路径部分完整显示，固定50字符宽度
     if not frame:
-        frame = inspect.stack()[1]
+        frame = inspect.stack()[2]
     filePath = os.path.relpath(frame.filename)
     fileNameStr: str = f"{filePath}"
 

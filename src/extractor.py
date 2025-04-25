@@ -50,7 +50,7 @@ class Extractor:
         self.fileList = getFilesInFolderByType(self.dataFolder, self.targetFileExt)
         readerCls = self.classManager.getReader(fileExt)
         if readerCls:
-            self.reader = readerCls(self.fileList)
+            self.reader = readerCls()
             loggerPrint(f"Use Reader '{self.reader.__class__.__name__}'")
         else:
             loggerPrint(f"Procsr '{self.targetFileExt}Reader' not found.", level=LogLevels.CRITICAL)
@@ -84,5 +84,11 @@ class Extractor:
         self._inferFileExt()
         self._initProcessers()
 
+        self.reader.init(self.fileList)
+        self.parser.init()
+        self.formatter.init()
+        self.exporter.init()
+
     def extract(self):
-        readData = self.reader.read()
+        data = self.reader.read()
+        self.parser.parse(data)

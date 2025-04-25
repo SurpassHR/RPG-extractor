@@ -1,15 +1,16 @@
+from typing import Any
+
 from src.processers.readers.readerBase import ReaderBase
 from src.loggers.simpleLogger import loggerPrint, loggerPrintList
 from src.publicDef.levelDefs import LogLevels
-from src.utils.fileTools import readJson
+from src.utils.fileTools import (getFileNameWithoutExt, getFileParentFolder, readJson, writeDictToJsonFile,
+    writeListToFile)
 from src.utils.decorators.execTimer import execTimer
+from src.utils.timeTools import getCurrTimeInFmt
 
 class JsonReader(ReaderBase):
-    def __init__(self, fileList: list[str]):
-        super().__init__(fileList)
-        self._load()
-
-        self.jsonData: list = []
+    def __init__(self):
+        super().__init__()
 
     @execTimer
     def _load(self):
@@ -17,13 +18,17 @@ class JsonReader(ReaderBase):
         loggerPrintList(self.fileList)
 
     @execTimer
-    def read(self):
+    def read(self) -> list:
+        self._load()
         loggerPrint(f"Call JsonReader.read().", level=LogLevels.DEBUG)
-        jsonData: list = []
+        jsonData: dict[str, list] = {}
         for file in self.fileList:
-            jsonData.append(readJson(file))
+            data = readJson(file)
+            fileNameWithoutExt = getFileNameWithoutExt(file)
+            jsonData[fileNameWithoutExt] = data
+            writeDictToJsonFile(
+                data,
+                f'output/reader/json/{getCurrTimeInFmt("%y-%m-%d_%H-%M")}/{fileNameWithoutExt}.json'
+            )
 
-        # loggerPrintList(jsonData)
-
-    def get(self):
-        pass
+        return jsonData
