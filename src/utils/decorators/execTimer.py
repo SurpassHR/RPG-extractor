@@ -14,6 +14,6 @@ def execTimer(func):
         if hasattr(args[0], '__class__'):
             className = f" (class: {args[0].__class__.__name__})"
 
-        loggerPrint(f"Func '{func.__name__}'{className} exec time: {execTime:.4f} s.", level=LogLevels.DEBUG)
+        loggerPrint(f"Func '{func.__name__}'{className} exec time: {execTime:.4f} s.", level=LogLevels.INFO)
         return res
     return wrap

@@ -71,9 +71,9 @@ def getFilesInFolderByTypes(folderPath: str, fileExts: list[str]) -> list[str]:
 
     return ret
 
-file_lock = threading.Lock()
+list_file_lock = threading.Lock()
 def writeListToFile(dataList: list, fileName: str, firstWrite: bool = True) -> None:
-    with file_lock:
+    with list_file_lock:
         if firstWrite:
             if os.path.exists(fileName):
                 os.remove(fileName)
@@ -82,14 +82,20 @@ def writeListToFile(dataList: list, fileName: str, firstWrite: bool = True) -> N
         if dataList is not None and dataList != []:
             with open(fileName, 'a') as f:
                 for item in dataList:
+                    if isinstance(item, dict):
+                        writeDictToJsonFile(item, fileName, False)
+                        continue
                     f.write(str(item) + '\n')
 
-def writeDictToJsonFile(dataDict: dict, fileName: str) -> None:
-    with file_lock:
-        if os.path.exists(fileName):
-            os.remove(fileName)
-        if not os.path.exists(os.path.dirname(fileName)):
-            os.makedirs(os.path.dirname(fileName))
+dict_file_lock = threading.Lock()
+def writeDictToJsonFile(dataDict: dict, fileName: str, firstWrite: bool = True) -> None:
+    with dict_file_lock:
+        if firstWrite:
+            if os.path.exists(fileName):
+                os.remove(fileName)
+            if not os.path.exists(os.path.dirname(fileName)):
+                os.makedirs(os.path.dirname(fileName))
     if dataDict is not None and dataDict != {}:
         with open(fileName, 'a') as f:
             json.dump(dataDict, f, ensure_ascii=False, indent=4)
+            f.write('\n')
