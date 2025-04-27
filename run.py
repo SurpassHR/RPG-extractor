@@ -6,6 +6,6 @@ if __name__ == '__main__':
     config = loadConfig()
     extractor = Extractor(
         dataFolder=config.get('game_data_dir'),
-        outputFolder=config.get('output_files')
+        outputFolder=config.get('output_data_dir')
     )
     extractor.extract()

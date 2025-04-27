@@ -73,7 +73,7 @@ class Extractor:
 
         exporterCls = self.classManager.getExporter(fileExt)
         if exporterCls:
-            self.exporter = exporterCls()
+            self.exporter = exporterCls(self.outputFolder)
             loggerPrint(f"Use Exporter '{self.exporter.__class__.__name__}'")
         else:
             loggerPrint(f"Procsr '{self.targetFileExt}Exporter' not found.", level=LogLevels.CRITICAL)
@@ -92,3 +92,4 @@ class Extractor:
         readData = self.reader.read()
         parseData = self.parser.parse(readData)
         formatData = self.formatter.format(parseData)
+        self.exporter.export(formatData)

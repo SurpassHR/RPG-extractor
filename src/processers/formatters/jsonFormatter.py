@@ -27,8 +27,8 @@ class JsonFormatter(FormatterBase):
     def _rmAllNameTile(self, dataList: list[str]) -> list[str]:
         patternDict: dict[re.Pattern[str], str] = {
             re.compile(r'\\n[cr]*<\\c\[\d{1,3}\].*\\c>'): '',
-            re.compile(r'\\\w\[\d{1,3}\]'): '',
-            re.compile(r'\\c'): ''
+            re.compile(r'\\\w\[\d{1,3}\]'): '\n',
+            re.compile(r'\\c'): '\n'
         }
 
         subbedDataList: list[str] = []
@@ -66,3 +66,5 @@ class JsonFormatter(FormatterBase):
             res,
             f"output/formatter/json/{getCurrTimeInFmt('%y-%m-%d_%H-%M')}/textDisp_NoTitle_Dedup_FixLineBreak.json"
         )
+
+        return res
