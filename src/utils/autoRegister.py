@@ -14,16 +14,16 @@ class ClassManager:
 
         if 'Reader' in name:
             cls._readers[name.replace('Reader', '')] = the_class
-            loggerPrint(f"Reader '{name}' registered.")
+            loggerPrint(f"Register reader '{name}'.")
         elif 'Parser' in name:
             cls._parsers[name.replace('Parser', '')] = the_class
-            loggerPrint(f"Parser '{name}' registered.")
+            loggerPrint(f"Register Parser '{name}'.")
         elif 'Formatter' in name:
             cls._formatters[name.replace('Formatter', '')] = the_class
-            loggerPrint(f"Formatter '{name}' registered.")
+            loggerPrint(f"Register Formatter '{name}'.")
         elif 'Exporter' in name:
             cls._exporters[name.replace('Exporter', '')] = the_class
-            loggerPrint(f"Exporter '{name}' registered.")
+            loggerPrint(f"Register Exporter '{name}'.")
 
     @classmethod
     def getReader(cls, name):

@@ -1,28 +1,13 @@
 import re
 
-import enchant
-
 from src.processers.formatters.formatterBase import FormatterBase
 from src.utils.fileTools import writeListToFile
 from src.utils.timeTools import getCurrTimeInFmt
+from src.utils.regexTools import execMultiReSub
 
 class JsonFormatter(FormatterBase):
     def __init__(self):
         super().__init__()
-
-    def _isMultiReFindall(self, patList: list[re.Pattern[str]], input: str):
-        for pattern in patList:
-            res = re.findall(pattern, input)
-            if len(res) != 0:
-                # print(pattern, input)
-                return True
-        return False
-
-    def _execMultiReSub(self, patDict: dict[re.Pattern[str], str], input: str) -> str:
-        res = input
-        for key in patDict:
-            res = re.sub(key, patDict[key], res)
-        return res
 
     def _rmAllNameTile(self, dataList: list[str]) -> list[str]:
         patternDict: dict[re.Pattern[str], str] = {
@@ -33,7 +18,7 @@ class JsonFormatter(FormatterBase):
 
         subbedDataList: list[str] = []
         for item in dataList:
-            subbedDataList.append(self._execMultiReSub(patternDict, item))
+            subbedDataList.append(execMultiReSub(patternDict, item))
 
         return subbedDataList
 

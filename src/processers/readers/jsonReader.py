@@ -1,6 +1,5 @@
 from src.processers.readers.readerBase import ReaderBase
-from src.loggers.simpleLogger import loggerPrint, loggerPrintList
-from src.publicDef.levelDefs import LogLevels
+from src.loggers.simpleLogger import loggerPrint
 from src.utils.fileTools import (
     getFileNameWithoutExt,
     readJson,
@@ -14,15 +13,9 @@ class JsonReader(ReaderBase):
         super().__init__()
 
     @execTimer
-    def _load(self):
-        loggerPrint(f"Loading file list:")
-        loggerPrintList(self.fileList)
-
-    @execTimer
     def read(self) -> dict:
-        self._load()
-        loggerPrint(f"Call JsonReader.read().", level=LogLevels.DEBUG)
-        jsonData: dict[str, list] = {}
+        super().read()
+        jsonData = {}
         for file in self.fileList:
             data = readJson(file)
             fileNameWithoutExt = getFileNameWithoutExt(file)
