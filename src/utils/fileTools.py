@@ -81,11 +81,13 @@ def writeListToFile(dataList: list, fileName: str, firstWrite: bool = True) -> N
                 os.makedirs(os.path.dirname(fileName))
         if dataList is not None and dataList != []:
             with open(fileName, 'a') as f:
-                for item in dataList:
-                    if isinstance(item, dict):
-                        writeDictToJsonFile(item, fileName, False)
-                        continue
-                    f.write(str(item) + '\n')
+                dataList = [item for item in dataList if item != '']
+                json.dump(dataList, f, ensure_ascii=False, indent=4)
+                # for item in dataList:
+                #     if isinstance(item, dict):
+                #         writeDictToJsonFile(item, fileName, False)
+                #         continue
+                #     f.write(str(item) + '\n')
 
 dict_file_lock = threading.Lock()
 def writeDictToJsonFile(dataDict: dict, fileName: str, firstWrite: bool = True) -> None:

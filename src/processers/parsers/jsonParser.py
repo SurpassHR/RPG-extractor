@@ -1,4 +1,5 @@
 from enum import IntEnum
+import json
 from src.loggers.simpleLogger import loggerPrint
 from src.processers.parsers.parserBase import ParserBase
 from src.utils.fileTools import writeListToFile
@@ -43,7 +44,7 @@ class JsonParser(ParserBase):
                     continue
                 if isinstance(val, dict):
                     code = val.get('code')
-                    if code and code == 401:
+                    if code and code == ContentAttrCode.TEXT_DISP.value:
                         res.append(val)
                         continue
                     res.extend(self._traverseToFindTargetText(val, targetCode))
@@ -51,11 +52,20 @@ class JsonParser(ParserBase):
         return res
 
     @execTimer
-    def parse(self, data: dict):
+    def parse(self, data: dict) -> list:
         [self.dataList.append(data[item]) for item in data if 'Map' in item]
         loggerPrint(f"Filtered {len(self.dataList)} data from raw data.")
-        resList = self._traverseToFindTargetText(self.dataList)
+
+        textDispRawJsonList: list = self._traverseToFindTargetText(self.dataList, ContentAttrCode.TEXT_DISP.value)
         writeListToFile(
-            resList,
-            f"output/parser/json/{getCurrTimeInFmt('%y-%m-%d_%H-%M')}/atomJsonCode401.txt"
+            textDispRawJsonList,
+            f"output/parser/json/{getCurrTimeInFmt('%y-%m-%d_%H-%M')}/atomJsonCode401.json"
         )
+
+        textDispList = [item['parameters'][0] for item in textDispRawJsonList]
+        writeListToFile(
+            textDispList,
+            f"output/parser/json/{getCurrTimeInFmt('%y-%m-%d_%H-%M')}/pureTextDisp.json"
+        )
+
+        return textDispList

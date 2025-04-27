@@ -9,5 +9,5 @@ class ParserBase(AutoRegisterBase):
     def init(self):
         pass
 
-    def parse(self, data: Any):
+    def parse(self, data: Any) -> Any:
         pass

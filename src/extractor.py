@@ -1,3 +1,4 @@
+from ast import parse
 from src.publicDef.levelDefs import LogLevels
 from src.loggers.simpleLogger import loggerPrint
 from src.utils.autoRegister import ClassManager
@@ -88,5 +89,6 @@ class Extractor:
         self.exporter.init()
 
     def extract(self):
-        data = self.reader.read()
-        self.parser.parse(data)
+        readData = self.reader.read()
+        parseData = self.parser.parse(readData)
+        formatData = self.formatter.format(parseData)
