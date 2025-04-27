@@ -1,5 +1,3 @@
-from typing import Optional
-
 from src.publicDef.levelDefs import LogLevels
 from src.loggers.simpleLogger import loggerPrint
 from src.utils.autoRegister import ClassManager
@@ -18,10 +16,10 @@ class Extractor:
         self.fileList: list[str] = []
         self.targetFileExt: str = ''
 
-        self.reader: Optional[ReaderBase] = None
-        self.parser: Optional[ParserBase] = None
-        self.formatter: Optional[FormatterBase] = None
-        self.exporter: Optional[ExporterBase] = None
+        self.reader: ReaderBase
+        self.parser: ParserBase
+        self.formatter: FormatterBase
+        self.exporter: ExporterBase
 
         self._init()
 
