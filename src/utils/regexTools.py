@@ -13,3 +13,10 @@ def execMultiReSub(patDict: dict[re.Pattern[str], str], input: str) -> str:
     for key in patDict:
         res = re.sub(key, patDict[key], res)
     return res
+
+def execListMultiReSub(patDict: dict[re.Pattern[str], str], input: list) -> list:
+    subbedDataList: list[str] = []
+    for item in input:
+        subbedDataList.append(execMultiReSub(patDict, item))
+
+    return subbedDataList

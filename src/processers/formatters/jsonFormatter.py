@@ -9,7 +9,7 @@ class JsonFormatter(FormatterBase):
     def __init__(self):
         super().__init__()
 
-    def _rmAllNameTile(self, dataList: list[str]) -> list[str]:
+    def _rmAllEscapes(self, dataList: list[str]) -> list[str]:
         patternDict: dict[re.Pattern[str], str] = {
             re.compile(r'\\n[cr]*<\\c\[\d{1,3}\].*\\c>'): '',
             re.compile(r'\\\w\[\d{1,3}\]'): '\n',
@@ -34,7 +34,7 @@ class JsonFormatter(FormatterBase):
         return list(set(dataList))
 
     def format(self, data: list):
-        res: list = self._rmAllNameTile(data)
+        res: list = self._rmAllEscapes(data)
         writeListToFile(
             res,
             f"output/formatter/json/{getCurrTimeInFmt('%y-%m-%d_%H-%M')}/textDisp_NoTitle.json"

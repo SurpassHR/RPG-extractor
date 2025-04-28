@@ -7,5 +7,5 @@ class JsonExporter(ExporterBase):
         super().__init__(exportFolder)
 
     def export(self, data: list) -> None:
-        path = os.path.join(self.exportFolder, f"{getCurrTimeInFmt('%y-%m-%d_%H-%M')}.json")
+        path = os.path.join(self.exportFolder, 'jsonExport', f"{getCurrTimeInFmt('%y-%m-%d_%H-%M')}.json")
         self._exportListToJson(data, path)

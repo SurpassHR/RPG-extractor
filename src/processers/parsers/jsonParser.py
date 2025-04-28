@@ -1,4 +1,5 @@
 from enum import IntEnum
+from typing import Any
 
 from src.loggers.simpleLogger import loggerPrint
 from src.processers.parsers.parserBase import ParserBase
@@ -11,10 +12,31 @@ class ContentAttrCode(IntEnum):
     OPTION = 102 # 选项
     TEXT_DISP = 401 # 文本显示
 
+class ParseNeededFile:
+    def __init__(self) -> None:
+        self._mapFiles: dict[str, str] = {}
+        self._itemFiles: dict[str, str] = {}
+
+    def addMapFile(self, k: str, v: str) -> None:
+        self._mapFiles[k] = v
+
+    def addItemFile(self, k: str, v: str) -> None:
+        self._itemFiles[k] = v
+
+    def getMapFiles(self) -> dict:
+        return self._mapFiles
+
+    def getItemFiles(self) -> dict:
+        return self._itemFiles
+
+    def getFileNum(self) -> int:
+        return len(self._mapFiles) + len(self._itemFiles)
+
 class JsonParser(ParserBase):
     def __init__(self):
         super().__init__()
         self.dataList: list = []
+        self.parseNeededFile = ParseNeededFile()
 
     def _procList(self, data: list):
         pass
@@ -22,50 +44,76 @@ class JsonParser(ParserBase):
     def _procDict(self, data: dict):
         pass
 
-    def _traverseToFindTargetText(self, data: dict | list, targetCode: ContentAttrCode = ContentAttrCode.TEXT_DISP) -> list:
+    def _traverseToFindTargetText(self, data: dict | list, targetK: str, targetV: Any) -> list:
         res = []
 
         if isinstance(data, list):
             for item in data:
                 if isinstance(item, list):
-                    res.extend(self._traverseToFindTargetText(item, targetCode))
+                    res.extend(self._traverseToFindTargetText(item, targetK, targetV))
                     continue
                 if isinstance(item, dict):
-                    code = item.get('code')
-                    if code and code == targetCode.value:
+                    code = item.get(targetK)
+                    if code and (code == targetV or targetV == '*'):
                         res.append(item)
                         continue
-                    res.extend(self._traverseToFindTargetText(item, targetCode))
+                    res.extend(self._traverseToFindTargetText(item, targetK, targetV))
         elif isinstance(data, dict):
             for key in data.keys():
                 val = data[key]
                 if isinstance(val, list):
-                    res.extend(self._traverseToFindTargetText(val, targetCode))
+                    res.extend(self._traverseToFindTargetText(val, targetK, targetV))
                     continue
                 if isinstance(val, dict):
-                    code = val.get('code')
-                    if code and code == targetCode.value:
+                    code = val.get(targetK)
+                    if code and (code == targetV or targetV == '*'):
                         res.append(val)
                         continue
-                    res.extend(self._traverseToFindTargetText(val, targetCode))
+                    res.extend(self._traverseToFindTargetText(val, targetK, targetV))
 
         return res
 
     @execTimer
     def parse(self, data: dict) -> list:
-        [self.dataList.append(data[item]) for item in data if 'Map' in item]
-        loggerPrint(f"Filtered {len(self.dataList)} data from raw data.")
+        for k, v in data.items():
+            if 'Map' in k:
+                self.parseNeededFile.addMapFile(k, v)
+                continue
+            if 'Items' in k:
+                self.parseNeededFile.addItemFile(k, v)
+                continue
 
-        textDispRawJsonList: list = self._traverseToFindTargetText(self.dataList, ContentAttrCode.TEXT_DISP)
+        loggerPrint(f"Filtered {self.parseNeededFile.getFileNum()} data from raw data.")
+
+        dialogueJsonCodeList = self._traverseToFindTargetText(
+            data=self.parseNeededFile.getMapFiles(),
+            targetK='code',
+            targetV=ContentAttrCode.TEXT_DISP.value
+        )
         writeListToFile(
-            textDispRawJsonList,
-            f"output/parser/json/{getCurrTimeInFmt('%y-%m-%d_%H-%M')}/atomJsonCode401.json"
+            dialogueJsonCodeList,
+            f"output/parser/json/{getCurrTimeInFmt('%y-%m-%d_%H-%M')}/dialogueJsonCodeList.json"
+        )
+        itemJsonCodeList = self._traverseToFindTargetText(
+            data=self.parseNeededFile.getItemFiles(),
+            targetK='name',
+            targetV='*'
+        )
+        writeListToFile(
+            itemJsonCodeList,
+            f"output/parser/json/{getCurrTimeInFmt('%y-%m-%d_%H-%M')}/itemJsonCodeList.json"
         )
 
-        textDispList: list = [item['parameters'][0] for item in textDispRawJsonList]
+        rawDataList: list = []
+        rawDataList.extend([item['parameters'][0] for item in dialogueJsonCodeList])
+        for item in itemJsonCodeList:
+            if item['name']:  # 确保 item['name'] 不是假值，避免意外情况
+                rawDataList.append(item['name'])
+            if item['description']: # 确保 item['description'] 不是假值
+                rawDataList.append(item['description'])
         writeListToFile(
-            textDispList,
-            f"output/parser/json/{getCurrTimeInFmt('%y-%m-%d_%H-%M')}/pureTextDisp.json"
+            rawDataList,
+            f"output/parser/json/{getCurrTimeInFmt('%y-%m-%d_%H-%M')}/rawDataList.json"
         )
 
-        return textDispList
+        return rawDataList
