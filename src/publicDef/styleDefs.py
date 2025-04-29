@@ -8,6 +8,13 @@ class ANSIColors(StrEnum):
     COLOR_BRIGHT_BLUE       = "\033[94m"
     COLOR_BRIGHT_MAGENTA    = "\033[95m"
 
+class ANSIStyles(StrEnum):
+    STYLE_RESET             = "\033[0m"
+    STYLE_BOLD              = "\033[1m"
+    STYLE_ITALIC            = "\033[3m"
+    STYLE_UNDERLINE         = "\033[4m"
+    STYLE_STRIKETHROUGH     = "\033[1m"
+
 class ColorCode(IntEnum):
     # 参考: https://essentialsdocs.fandom.com/wiki/Messages#Text_colours
     BLUE = 1

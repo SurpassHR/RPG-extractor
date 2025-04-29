@@ -6,7 +6,7 @@ from pathlib import Path
 
 sys.path.append(str(Path(__file__).resolve().parent.parent.parent))
 
-from src.publicDef.colorDefs import ANSIColors
+from src.publicDef.styleDefs import ANSIColors, ANSIStyles
 from src.publicDef.levelDefs import LogLevels
 from src.utils.timeTools import getCurrTimeInFmt, getCurrTime
 from src.utils.configLoader import loadConfig
@@ -30,36 +30,36 @@ def loggerPrint(msg, level: LogLevels = LogLevels.INFO, frame = None) -> None:
         _printFormatted(msg, level, frame)
 
 def _writeToFile(msg, level, frame):
-    log_file = f'logs/{getCurrTimeInFmt(fmt="%y-%m-%d")}.log'
-    abs_path = os.path.abspath(log_file)
-    parent_folder = os.path.dirname(abs_path)
-    if not os.path.exists(parent_folder):
-        os.makedirs(parent_folder)
+    logFile = f'logs/{getCurrTimeInFmt(fmt="%y-%m-%d")}.log'
+    absPath = os.path.abspath(logFile)
+    parentFolder = os.path.dirname(absPath)
+    if not os.path.exists(parentFolder):
+        os.makedirs(parentFolder)
 
     # 获取格式化日志内容（不含ANSI颜色代码）
-    log_content = _formatForFile(msg, level, frame)
+    logContent = _formatForFile(msg, level, frame)
 
-    with open(abs_path, 'a') as f:
-        f.write(log_content + '\n')
+    with open(absPath, 'a') as f:
+        f.write(logContent + '\n')
 
 def _formatForFile(msg, level, frame):
     if not frame:
         frame = inspect.stack()[2]
 
     # 时间部分
-    curr_time = f"{getCurrTime():19}"
+    currTime = f"{getCurrTime():19}"
 
     # 文件路径部分
-    file_path = os.path.relpath(frame.filename)
-    line_no = str(frame.lineno)
-    file_context = f'{file_path}:{line_no}'
-    file_context = f'{file_context:50}'
+    filePath = os.path.relpath(frame.filename)
+    lineNo = str(frame.lineno)
+    fileContext = f'{filePath}:{lineNo}'
+    fileContext = f'{fileContext:50}'
 
     # 日志级别
-    level_str = f"{level.name:8}"
+    levelStr = f"{level.name:8}"
 
     # 组合完整日志行
-    return f"{curr_time} {file_context} {level_str} {msg}"
+    return f"{currTime} {fileContext} {levelStr} {msg}"
 
 def _printFormatted(msg, level, frame):
     colorStr: str = LOG_LEVEL_AND_COLOR_MATCH.get(level, ANSIColors.COLOR_RESET).value
@@ -75,7 +75,7 @@ def _printFormatted(msg, level, frame):
     fileNameStr: str = f"{filePath}"
 
     # 日志级别固定8字符宽度
-    levelStr: str = colorStr + f"{level.name:8}" + resetColorStr + ' '
+    levelStr: str = italicFont(boldFont(colorStr + f"{level.name:>8}" + ' '*4 + resetColorStr + ' '))
 
     lineNoStr: str = str(frame.lineno)
     fileContext: str = fileNameStr + ':' + lineNoStr + ' '
@@ -103,12 +103,22 @@ def loggerPrintDict(dataDict: dict) -> None:
         for key, value in dataDict.items():
             loggerPrint(f"{key}: {value}", frame=inspect.stack()[1], level=LogLevels.DEBUG)
 
+def _stylize(msg: str, style: ANSIStyles) -> str:
+    return f"{style.value}{msg}{ANSIStyles.STYLE_RESET.value}"
+
+def boldFont(msg: str) -> str:
+    return _stylize(msg, ANSIStyles.STYLE_BOLD)
+
+def italicFont(msg: str) -> str:
+    return _stylize(msg, ANSIStyles.STYLE_ITALIC)
+
 def loggerPrintBanner():
-    loggerPrint(r""",-.  ;-.   ,-.     ,--. .   , ,---. ,-.   ,.   ,-. ,---.  ,-.  ,-.  """)
-    loggerPrint(r"""|  ) |  ) /        |     \ /    |   |  ) /  \ /      |   /   \ |  ) """)
-    loggerPrint(r"""|-<  |-'  | -. --- |-     X     |   |-<  |--| |      |   |   | |-<  """)
-    loggerPrint(r"""|  \ |    \  |     |     / \    |   |  \ |  | \      |   \   / |  \ """)
-    loggerPrint(r"""'  ' '     `-'     `--' '   `   '   '  ' '  '  `-'   '    `-'  '  ' """)
+    loggerPrint(boldFont("""\033[31m██████╗░██████╗░░██████╗░░░░░░░███████╗██╗░░██╗████████╗██████╗░░█████╗░░█████╗░████████╗░█████╗░██████╗░\033[0m"""))
+    loggerPrint(boldFont("""\033[35m██╔══██╗██╔══██╗██╔════╝░░░░░░░██╔════╝╚██╗██╔╝╚══██╔══╝██╔══██╗██╔══██╗██╔══██╗╚══██╔══╝██╔══██╗██╔══██╗\033[0m"""))
+    loggerPrint(boldFont("""\033[34m██████╔╝██████╔╝██║░░██╗░█████╗█████╗░░░╚███╔╝░░░░██║░░░██████╔╝███████║██║░░╚═╝░░░██║░░░██║░░██║██████╔╝\033[0m"""))
+    loggerPrint(boldFont("""\033[36m██╔══██╗██╔═══╝░██║░░╚██╗╚════╝██╔══╝░░░██╔██╗░░░░██║░░░██╔══██╗██╔══██║██║░░██╗░░░██║░░░██║░░██║██╔══██╗\033[0m"""))
+    loggerPrint(boldFont("""\033[32m██║░░██║██║░░░░░╚██████╔╝░░░░░░███████╗██╔╝╚██╗░░░██║░░░██║░░██║██║░░██║╚█████╔╝░░░██║░░░╚█████╔╝██║░░██║\033[0m"""))
+    loggerPrint(boldFont("""\033[33m╚═╝░░╚═╝╚═╝░░░░░░╚═════╝░░░░░░░╚══════╝╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░╚═╝╚═╝░░╚═╝░╚════╝░░░░╚═╝░░░░╚════╝░╚═╝░░╚═╝\033[0m"""))
 
 if __name__ == '__main__':
     loggerPrint('haha', level=LogLevels.INFO)

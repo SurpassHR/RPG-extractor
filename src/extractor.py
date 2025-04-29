@@ -1,6 +1,5 @@
-from ast import parse
 from src.publicDef.levelDefs import LogLevels
-from src.loggers.simpleLogger import loggerPrint
+from src.loggers.simpleLogger import loggerPrint, boldFont
 from src.utils.autoRegister import ClassManager
 from src.utils.fileTools import getAllFilesFromFolder, getFileExt, getFilesInFolderByType
 
@@ -52,7 +51,7 @@ class Extractor:
             self.reader = readerCls()
             loggerPrint(f"Use Reader '{self.reader.__class__.__name__}'")
         else:
-            loggerPrint(f"Procsr '{self.targetFileExt}Reader' not found.", level=LogLevels.CRITICAL)
+            loggerPrint(f"Procsr '{boldFont(f"{self.targetFileExt}Reader")}' not found.", level=LogLevels.CRITICAL)
             exit(-1)
 
         parserCls = self.classManager.getParser(fileExt)
@@ -60,7 +59,7 @@ class Extractor:
             self.parser = parserCls()
             loggerPrint(f"Use Parser '{self.parser.__class__.__name__}'")
         else:
-            loggerPrint(f"Procsr '{self.targetFileExt}Parser' not found.", level=LogLevels.CRITICAL)
+            loggerPrint(f"Procsr '{boldFont(f"{self.targetFileExt}Parser")}' not found.", level=LogLevels.CRITICAL)
             exit(-1)
 
         formatterCls = self.classManager.getFormatter(fileExt)
@@ -68,7 +67,7 @@ class Extractor:
             self.formatter = formatterCls()
             loggerPrint(f"Use Formatter '{self.formatter.__class__.__name__}'")
         else:
-            loggerPrint(f"Procsr '{self.targetFileExt}Formatter' not found.", level=LogLevels.CRITICAL)
+            loggerPrint(f"Procsr '{boldFont(f"{self.targetFileExt}Formatter")}' not found.", level=LogLevels.CRITICAL)
             exit(-1)
 
         exporterCls = self.classManager.getExporter(fileExt)
@@ -76,7 +75,7 @@ class Extractor:
             self.exporter = exporterCls(self.outputFolder)
             loggerPrint(f"Use Exporter '{self.exporter.__class__.__name__}'")
         else:
-            loggerPrint(f"Procsr '{self.targetFileExt}Exporter' not found.", level=LogLevels.CRITICAL)
+            loggerPrint(f"Procsr '{boldFont(f"{self.targetFileExt}Exporter")}' not found.", level=LogLevels.CRITICAL)
             exit(-1)
 
     def _init(self):

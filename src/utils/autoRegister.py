@@ -1,4 +1,4 @@
-from src.loggers.simpleLogger import loggerPrint
+from src.loggers.simpleLogger import boldFont, loggerPrint
 
 # 定义一个注册中心（管理类）
 class ClassManager:
@@ -14,16 +14,16 @@ class ClassManager:
 
         if 'Reader' in name:
             cls._readers[name.replace('Reader', '')] = the_class
-            loggerPrint(f"Register reader '{name}'.")
+            loggerPrint(f"Reg Reader {boldFont(f"{name}")}.")
         elif 'Parser' in name:
             cls._parsers[name.replace('Parser', '')] = the_class
-            loggerPrint(f"Register Parser '{name}'.")
+            loggerPrint(f"Reg Parser {boldFont(f"{name}")}.")
         elif 'Formatter' in name:
             cls._formatters[name.replace('Formatter', '')] = the_class
-            loggerPrint(f"Register Formatter '{name}'.")
+            loggerPrint(f"Reg Formatter {boldFont(f"{name}")}.")
         elif 'Exporter' in name:
             cls._exporters[name.replace('Exporter', '')] = the_class
-            loggerPrint(f"Register Exporter '{name}'.")
+            loggerPrint(f"Reg Exporter {boldFont(f"{name}")}.")
 
     @classmethod
     def getReader(cls, name):
