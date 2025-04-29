@@ -9,7 +9,7 @@ class ExporterBase(AutoRegisterBase):
     def init(self):
         pass
 
-    def _exportListToJson(self, data: list, exportJson: str):
+    def _exportListToJson(self, data: list, exportJson: str) -> None:
         jsonContent: dict = {}
         for item in data:
             key = val = f'{item}'

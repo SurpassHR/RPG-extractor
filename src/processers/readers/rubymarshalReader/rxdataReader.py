@@ -1,21 +1,26 @@
-
+import os
 import zlib
 from typing import Any
 from rubymarshal.classes import RubyObject, RubyString
 
-from src.loggers.simpleLogger import loggerPrint
+from src.loggers.simpleLogger import loggerPrint, loggerPrintList
 from src.processers.readers.rubymarshalReader.rubymarshalDecoder import RubyMarshalDecoder
 from src.publicDef.levelDefs import LogLevels
 from src.processers.readers.readerBase import ReaderBase
-from src.utils.fileTools import getFileName
+from src.utils.fileTools import getFileName, writeListToFile, writeListToRubyFile
+from src.utils.dataStructTools import getAtomObjFromRubyObj, listDedup
+from src.utils.decorators.execTimer import timer
+from src.utils.timeTools import getCurrTimeInFmt
 
 class RxdataReader(ReaderBase):
     def __init__(self):
         super().__init__()  # 将str转换为list[str]以匹配父类签名
 
         self.scriptsRxdata: list = []
-        self.doodasRxdata: Any = None
+        self.doodadsRxdata: Any = None
         self.commonRxdata: list = []
+
+        self.commonDataFirstWrite: bool = True
 
     def _readCommonRxdata(self, filePath: str) -> list[RubyObject]:
         data = self._load(filePath)
@@ -68,7 +73,7 @@ class RxdataReader(ReaderBase):
         if baseName == 'Scripts.rxdata':
             self.scriptsRxdata.extend(self._readScriptsRxdata(filePath))
         elif 'doodads.rxdata' in baseName:
-            self.doodasRxdata = self._readDoodasRxdata(filePath)
+            self.doodadsRxdata = self._readDoodasRxdata(filePath)
         else:
             self.commonRxdata.extend(self._readCommonRxdata(filePath))
 
@@ -82,6 +87,7 @@ class RxdataReader(ReaderBase):
         loader = RubyMarshalDecoder(fd, None)
         return loader.read()
 
+    @timer
     def read(self) -> tuple[list, dict, list]:
         for file in self.fileList:
             try:
@@ -89,8 +95,30 @@ class RxdataReader(ReaderBase):
             except Exception as e:
                 loggerPrint(f'Error reading file {file}: {e}', level=LogLevels.ERROR)
                 continue
+
+        outputBaseFolder = os.path.join('output', 'reader', 'rxdata', getCurrTimeInFmt('%y-%m-%d_%H-%M'))
+        for fileData in self.commonRxdata:
+            atomObjList: list[RubyObject] = getAtomObjFromRubyObj(fileData)
+            atomObjList = listDedup(atomObjList)
+            # loggerPrintList(atomObjList)
+            writeListToFile(
+                dataList=atomObjList,
+                fileName=os.path.join(outputBaseFolder, 'commonRxdata.txt'),
+                firstWrite=self.commonDataFirstWrite
+            )
+            self.commonDataFirstWrite = False
+
+        writeListToRubyFile(
+            dataList=list(self.scriptsRxdata),
+            fileName=os.path.join(outputBaseFolder, 'scriptsRxdata.rb')
+        )
+        writeListToRubyFile(
+            dataList=[self.doodadsRxdata],
+            fileName=os.path.join(outputBaseFolder, 'doodadsRxdata.rb')
+        )
+
         return (
             self.scriptsRxdata,
-            self.doodasRxdata,
+            self.doodadsRxdata,
             self.commonRxdata
         )

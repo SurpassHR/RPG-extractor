@@ -72,7 +72,7 @@ def getFilesInFolderByTypes(folderPath: str, fileExts: list[str]) -> list[str]:
     return ret
 
 list_file_lock = threading.Lock()
-def writeListToFile(dataList: list, fileName: str, firstWrite: bool = True) -> None:
+def dumpListToFile(dataList: list, fileName: str, firstWrite: bool = True) -> None:
     with list_file_lock:
         if firstWrite:
             if os.path.exists(fileName):
@@ -83,6 +83,18 @@ def writeListToFile(dataList: list, fileName: str, firstWrite: bool = True) -> N
             with open(fileName, 'a') as f:
                 dataList = [item for item in dataList if item != '']
                 json.dump(dataList, f, ensure_ascii=False, indent=4)
+
+def writeListToFile(dataList: list, fileName: str, firstWrite: bool = True) -> None:
+    with list_file_lock:
+        if firstWrite:
+            if os.path.exists(fileName):
+                os.remove(fileName)
+            if not os.path.exists(os.path.dirname(fileName)):
+                os.makedirs(os.path.dirname(fileName))
+        if dataList is not None and dataList != []:
+            with open(fileName, 'a') as f:
+                for item in dataList:
+                    f.write(str(item) + '\n')
 
 dict_file_lock = threading.Lock()
 def writeDictToJsonFile(dataDict: dict, fileName: str, firstWrite: bool = True) -> None:
@@ -96,3 +108,17 @@ def writeDictToJsonFile(dataDict: dict, fileName: str, firstWrite: bool = True) 
         with open(fileName, 'a') as f:
             json.dump(dataDict, f, ensure_ascii=False, indent=4)
             f.write('\n')
+
+ruby_file_lock = threading.Lock()
+def writeListToRubyFile(dataList: list[str], fileName: str, firstWrite: bool = True) -> None:
+    with ruby_file_lock:
+        if firstWrite:
+            if os.path.exists(fileName):
+                os.remove(fileName)
+            if not os.path.exists(os.path.dirname(fileName)):
+                os.makedirs(os.path.dirname(fileName))
+    with open(fileName, 'a') as rbFile:
+        for item in dataList:
+            if not item:
+                continue
+            rbFile.write('{}'.format(item.replace('\r', '')))

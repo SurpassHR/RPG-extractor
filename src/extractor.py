@@ -39,7 +39,7 @@ class Extractor:
                 self.targetFileExt = file
                 maxNum = fileExtNum[file]
 
-        loggerPrint(f"{maxNum} files with ext '{self.targetFileExt}' is the most.")
+        loggerPrint(f"{maxNum} files with ext '{boldFont(self.targetFileExt)}' is the most.")
 
     # 初始化各处理模块
     def _initProcessers(self):

@@ -1,9 +1,10 @@
 import re
 
 from src.processers.formatters.formatterBase import FormatterBase
-from src.utils.fileTools import writeListToFile
+from src.utils.fileTools import dumpListToFile
 from src.utils.timeTools import getCurrTimeInFmt
 from src.utils.regexTools import execMultiReSub
+from src.utils.dataStructTools import hashableListDedup
 
 class JsonFormatter(FormatterBase):
     def __init__(self):
@@ -22,32 +23,21 @@ class JsonFormatter(FormatterBase):
 
         return subbedDataList
 
-    def listDedup(self, dataList: list) -> list:
-        tempDataList = []
-        [tempDataList.append(item) for item in dataList if item not in tempDataList]
-        return tempDataList
-
-    def hashableListDedup(self, dataList: list) -> list:
-        return list(dict.fromkeys(dataList))
-
-    def nonSeqListDedup(self, dataList: list) -> list:
-        return list(set(dataList))
-
     def format(self, data: list):
         res: list = self._rmAllEscapes(data)
-        writeListToFile(
+        dumpListToFile(
             res,
             f"output/formatter/json/{getCurrTimeInFmt('%y-%m-%d_%H-%M')}/textDisp_NoTitle.json"
         )
 
-        res: list = self.hashableListDedup(res)
-        writeListToFile(
+        res: list = hashableListDedup(res)
+        dumpListToFile(
             res,
             f"output/formatter/json/{getCurrTimeInFmt('%y-%m-%d_%H-%M')}/textDisp_NoTitle_Dedup.json"
         )
 
         res: list = self._restoreIncorrectLineBreaks(res)
-        writeListToFile(
+        dumpListToFile(
             res,
             f"output/formatter/json/{getCurrTimeInFmt('%y-%m-%d_%H-%M')}/textDisp_NoTitle_Dedup_FixLineBreak.json"
         )

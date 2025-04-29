@@ -5,7 +5,7 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parent.parent.parent.parent))
 
 from src.processers.formatters.formatterBase import FormatterBase
-from src.utils.fileTools import writeListToFile
+from src.utils.fileTools import dumpListToFile
 from src.utils.regexTools import execListMultiReSub, isMultiReFindall
 from src.utils.timeTools import getCurrTimeInFmt
 
@@ -103,35 +103,35 @@ class JsFormatter(FormatterBase):
 
         resList = self._rmDigit(data)
         fileName += '_NoDigit'
-        writeListToFile(
+        dumpListToFile(
             resList,
             fileName + '.json'
         )
 
         resList = self._rmBool(resList)
         fileName += '_NoBool'
-        writeListToFile(
+        dumpListToFile(
             resList,
             fileName + '.json'
         )
 
         resList = self._rmCode(resList)
         fileName += '_NoCode'
-        writeListToFile(
+        dumpListToFile(
             resList,
             fileName + '.json'
         )
 
         resList = self._rmUseless(resList)
         fileName += '_NoUseless'
-        writeListToFile(
+        dumpListToFile(
             resList,
             fileName + '.json'
         )
 
         resList = self._rmEscape(resList)
         fileName += '_NoEscape'
-        writeListToFile(
+        dumpListToFile(
             resList,
             fileName + '.json'
         )

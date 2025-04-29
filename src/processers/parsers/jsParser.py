@@ -1,13 +1,11 @@
 import json
 import re
 
-from typing import Any
-
-from src.loggers.simpleLogger import loggerPrint
 from src.processers.parsers.parserBase import ParserBase
-from src.utils.fileTools import writeListToFile
+from src.utils.fileTools import dumpListToFile
 from src.utils.timeTools import getCurrTimeInFmt
 from src.utils.decorators.execTimer import timer
+from src.utils.dataStructTools import getAtomObjFromObj
 
 class JsParser(ParserBase):
     def __init__(self):
@@ -23,71 +21,6 @@ class JsParser(ParserBase):
             return ''
 
         return res[0]
-
-    def _traverseListDict(self, obj: Any) -> list:
-        if obj == "":
-            return []
-
-        if isinstance(obj, int):
-            return [obj]
-
-        retList = []
-
-        def __extendRetList(extendData: list):
-            if extendData is not None and extendData != []:
-                retList.extend(extendData)
-
-        def __procList(obj: list):
-            for item in obj:
-                res = self._traverseListDict(item)
-                __extendRetList(res)
-            return retList
-
-        def __procDict(obj: dict):
-            keys = obj.keys()
-            for key in keys:
-                res = self._traverseListDict(obj[key])
-                __extendRetList(res)
-            return retList
-
-        if isinstance(obj, list):
-            return __procList(obj)
-
-        if isinstance(obj, dict):
-            return __procDict(obj)
-
-        if isinstance(obj, str):
-            try:
-                if obj[0] == '[' or obj[0] == '{':
-                    dataLoads = json.loads(obj)
-                    loggerPrint(dataLoads)
-                    if isinstance(dataLoads, list):
-                        loggerPrint(dataLoads)
-                        return __procList(dataLoads)
-                    if isinstance(dataLoads, dict):
-                        loggerPrint(dataLoads)
-                        return __procDict(dataLoads)
-                else:
-                    return [obj]
-            except:
-                return [obj]
-
-        return retList
-
-    def _getAtomObjFromObj(self, fileData) -> list:
-        atomObjList: list = []
-        if isinstance(fileData, str):
-            atomObjList.extend(self._traverseListDict(fileData))
-            return atomObjList
-        for item in fileData:
-            try:
-                res = self._traverseListDict(item)
-                atomObjList.extend(res)
-            except Exception as e:
-                loggerPrint(f'Error processing obj: {e}')
-                continue
-
-        return atomObjList
 
     def _deepParse(self, data):
         # 处理字典类型
@@ -120,13 +53,13 @@ class JsParser(ParserBase):
         res = self._getTargetFileKeyContent(data)
 
         resList = json.loads(res)
-        writeListToFile(
+        dumpListToFile(
             resList,
             f"output/parser/js/{getCurrTimeInFmt('%y-%m-%d_%H-%M')}/pluginList.json"
         )
 
-        resList = self._getAtomObjFromObj(resList)
-        writeListToFile(
+        resList = getAtomObjFromObj(resList)
+        dumpListToFile(
             resList,
             f"output/parser/js/{getCurrTimeInFmt('%y-%m-%d_%H-%M')}/pluginList_parseAtomObj.json"
         )
@@ -137,13 +70,13 @@ class JsParser(ParserBase):
                 newList.append(self._deepParse(item))
             else:
                 newList.append(item)
-        writeListToFile(
+        dumpListToFile(
             newList,
             f"output/parser/js/{getCurrTimeInFmt('%y-%m-%d_%H-%M')}/pluginList_parseClusterData.json"
         )
 
-        resList = self._getAtomObjFromObj(newList)
-        writeListToFile(
+        resList = getAtomObjFromObj(newList)
+        dumpListToFile(
             resList,
             f"output/parser/js/{getCurrTimeInFmt('%y-%m-%d_%H-%M')}/pluginList_parseAtomClusterData.json"
         )

@@ -3,7 +3,7 @@ from typing import Any
 
 from src.loggers.simpleLogger import loggerPrint
 from src.processers.parsers.parserBase import ParserBase
-from src.utils.fileTools import writeListToFile
+from src.utils.fileTools import dumpListToFile
 from src.utils.timeTools import getCurrTimeInFmt
 from src.utils.decorators.execTimer import timer
 
@@ -118,7 +118,7 @@ class JsonParser(ParserBase):
             targetK='code',
             targetV=ContentAttrCode.TEXT_DISP.value
         )
-        writeListToFile(
+        dumpListToFile(
             dialogueJsonCodeList,
             f"output/parser/json/{getCurrTimeInFmt('%y-%m-%d_%H-%M')}/dialogueJsonCodeList.json"
         )
@@ -127,7 +127,7 @@ class JsonParser(ParserBase):
             targetK='displayName',
             targetV='*'
         )
-        writeListToFile(
+        dumpListToFile(
             mapNameJsonCodeList,
             f"output/parser/json/{getCurrTimeInFmt('%y-%m-%d_%H-%M')}/mapDisplayNameJsonCodeList.json"
         )
@@ -137,7 +137,7 @@ class JsonParser(ParserBase):
             targetK='name',
             targetV='*'
         )
-        writeListToFile(
+        dumpListToFile(
             itemJsonCodeList,
             f"output/parser/json/{getCurrTimeInFmt('%y-%m-%d_%H-%M')}/itemJsonCodeList.json"
         )
@@ -150,7 +150,7 @@ class JsonParser(ParserBase):
             if item['description']: # 确保 item['description'] 不是假值
                 rawDataList.append(item['description'])
         rawDataList.extend(mapNameJsonCodeList)
-        writeListToFile(
+        dumpListToFile(
             rawDataList,
             f"output/parser/json/{getCurrTimeInFmt('%y-%m-%d_%H-%M')}/rawDataList.json"
         )
