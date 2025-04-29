@@ -1,5 +1,6 @@
 import sys
 import os
+import re
 import inspect
 from typing import Dict
 from pathlib import Path
@@ -30,6 +31,7 @@ def loggerPrint(msg, level: LogLevels = LogLevels.INFO, frame = None) -> None:
         _printFormatted(msg, level, frame)
 
 def _writeToFile(msg, level, frame):
+    msg = re.sub(r'\033[[0-9]{1,}m', '', msg)
     logFile = f'logs/{getCurrTimeInFmt(fmt="%y-%m-%d")}.log'
     absPath = os.path.abspath(logFile)
     parentFolder = os.path.dirname(absPath)
