@@ -1,8 +1,12 @@
 import re
+import sys
+from pathlib import Path
+
+sys.path.append(str(Path(__file__).resolve().parent.parent.parent.parent))
 
 from src.processers.formatters.formatterBase import FormatterBase
 from src.utils.fileTools import writeListToFile
-from src.utils.regexTools import execListMultiReSub, execMultiReSub, isMultiReFindall
+from src.utils.regexTools import execListMultiReSub, isMultiReFindall
 from src.utils.timeTools import getCurrTimeInFmt
 
 class JsFormatter(FormatterBase):
@@ -54,8 +58,8 @@ class JsFormatter(FormatterBase):
     def _rmCode(self, dataList: list):
         patternList: list[re.Pattern[str]] = [
             re.compile(r'^[A-Z]{1}[a-z]+\(.+\)\.[A-Z|a-z]+'), # Axxx().Bxxx
-            re.compile(r'^[A-Za-z]{1}[a-z]+\.[A-Z|a-z]+'), # Axxx.Bxxx
-            re.compile(r'[a-z]+\._*[A-za-z]+'), # xxxx.yyyy
+            re.compile(r'^[A-Za-z]{1}[a-z]+\.[A-Z|a-z]+'), # Axxx.Bxxx[a-z]+\._*[A-za-z]+
+            re.compile(r'[a-z]+\._*[A-Za-z]+'), # xxxx.yyyy
             re.compile(r'\$[A-Za-z]{1,}'), # $...
             re.compile(r'^%.*'), # %...
             re.compile(r'^[Ee][V|v]\d{3}(_[A-Za-z])*'), # evxxx...
@@ -133,3 +137,10 @@ class JsFormatter(FormatterBase):
         )
 
         return resList
+
+if __name__ == '__main__':
+    fmter = JsFormatter()
+    dataList = [
+        "\"I'll put every detail of this journey as a diary in my\nresearch log, so I can keep track of things during my\nstay.\" \n\\}-\\c[17]Sasha Stewart.\\c",
+    ]
+    res = fmter.format(dataList)

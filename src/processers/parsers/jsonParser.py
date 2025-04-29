@@ -35,7 +35,6 @@ class ParseNeededFile:
 class JsonParser(ParserBase):
     def __init__(self):
         super().__init__()
-        self.dataList: list = []
         self.parseNeededFile = ParseNeededFile()
 
     def _procList(self, data: list):
@@ -53,8 +52,8 @@ class JsonParser(ParserBase):
                     res.extend(self._traverseToFindTargetText(item, targetK, targetV))
                     continue
                 if isinstance(item, dict):
-                    code = item.get(targetK)
-                    if code and (code == targetV or targetV == '*'):
+                    v = item.get(targetK)
+                    if v and (v == targetV or targetV == '*'):
                         res.append(item)
                         continue
                     res.extend(self._traverseToFindTargetText(item, targetK, targetV))
@@ -65,9 +64,38 @@ class JsonParser(ParserBase):
                     res.extend(self._traverseToFindTargetText(val, targetK, targetV))
                     continue
                 if isinstance(val, dict):
-                    code = val.get(targetK)
-                    if code and (code == targetV or targetV == '*'):
+                    v = val.get(targetK)
+                    if v and (v == targetV or targetV == '*'):
                         res.append(val)
+                        continue
+                    res.extend(self._traverseToFindTargetText(val, targetK, targetV))
+
+        return res
+
+    def _traverseToGetTargetText(self, data: dict | list, targetK: str, targetV: str) -> list:
+        res = []
+
+        if isinstance(data, list):
+            for item in data:
+                if isinstance(item, list):
+                    res.extend(self._traverseToFindTargetText(item, targetK, targetV))
+                    continue
+                if isinstance(item, dict):
+                    v = item.get(targetK)
+                    if v and (v == targetV or targetV == '*'):
+                        res.append(v)
+                        continue
+                    res.extend(self._traverseToFindTargetText(item, targetK, targetV))
+        elif isinstance(data, dict):
+            for key in data.keys():
+                val = data[key]
+                if isinstance(val, list):
+                    res.extend(self._traverseToFindTargetText(val, targetK, targetV))
+                    continue
+                if isinstance(val, dict):
+                    v = val.get(targetK)
+                    if v and (v == targetV or targetV == '*'):
+                        res.append(v)
                         continue
                     res.extend(self._traverseToFindTargetText(val, targetK, targetV))
 
@@ -94,6 +122,16 @@ class JsonParser(ParserBase):
             dialogueJsonCodeList,
             f"output/parser/json/{getCurrTimeInFmt('%y-%m-%d_%H-%M')}/dialogueJsonCodeList.json"
         )
+        mapNameJsonCodeList = self._traverseToGetTargetText(
+            data=self.parseNeededFile.getMapFiles(),
+            targetK='displayName',
+            targetV='*'
+        )
+        writeListToFile(
+            mapNameJsonCodeList,
+            f"output/parser/json/{getCurrTimeInFmt('%y-%m-%d_%H-%M')}/mapDisplayNameJsonCodeList.json"
+        )
+
         itemJsonCodeList = self._traverseToFindTargetText(
             data=self.parseNeededFile.getItemFiles(),
             targetK='name',
@@ -111,6 +149,7 @@ class JsonParser(ParserBase):
                 rawDataList.append(item['name'])
             if item['description']: # 确保 item['description'] 不是假值
                 rawDataList.append(item['description'])
+        rawDataList.extend(mapNameJsonCodeList)
         writeListToFile(
             rawDataList,
             f"output/parser/json/{getCurrTimeInFmt('%y-%m-%d_%H-%M')}/rawDataList.json"

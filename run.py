@@ -15,9 +15,9 @@ if __name__ == '__main__':
     )
     dataExtractor.extract()
 
-    jsFolder = os.path.join(dataFolder, '..', 'js')
-    jsExtractor = Extractor(
-        dataFolder=jsFolder,
-        outputFolder=outputFolder
-    )
-    jsExtractor.extract()
+    # jsFolder = os.path.join(dataFolder, '..', 'js')
+    # jsExtractor = Extractor(
+    #     dataFolder=jsFolder,
+    #     outputFolder=outputFolder
+    # )
+    # jsExtractor.extract()
