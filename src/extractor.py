@@ -49,7 +49,7 @@ class Extractor:
         readerCls = self.classManager.getReader(fileExt)
         if readerCls:
             self.reader = readerCls()
-            loggerPrint(f"Use Reader '{self.reader.__class__.__name__}'")
+            loggerPrint(f"Use Reader {boldFont(f'{self.reader.__class__.__name__}')}")
         else:
             loggerPrint(f"Procsr '{boldFont(f"{self.targetFileExt}Reader")}' not found.", level=LogLevels.CRITICAL)
             exit(-1)
@@ -57,7 +57,7 @@ class Extractor:
         parserCls = self.classManager.getParser(fileExt)
         if parserCls:
             self.parser = parserCls()
-            loggerPrint(f"Use Parser '{self.parser.__class__.__name__}'")
+            loggerPrint(f"Use Parser {boldFont(f'{self.parser.__class__.__name__}')}")
         else:
             loggerPrint(f"Procsr '{boldFont(f"{self.targetFileExt}Parser")}' not found.", level=LogLevels.CRITICAL)
             exit(-1)
@@ -65,7 +65,7 @@ class Extractor:
         formatterCls = self.classManager.getFormatter(fileExt)
         if formatterCls:
             self.formatter = formatterCls()
-            loggerPrint(f"Use Formatter '{self.formatter.__class__.__name__}'")
+            loggerPrint(f"Use Formatter {boldFont(f'{self.formatter.__class__.__name__}')}")
         else:
             loggerPrint(f"Procsr '{boldFont(f"{self.targetFileExt}Formatter")}' not found.", level=LogLevels.CRITICAL)
             exit(-1)
@@ -73,7 +73,7 @@ class Extractor:
         exporterCls = self.classManager.getExporter(fileExt)
         if exporterCls:
             self.exporter = exporterCls(self.outputFolder)
-            loggerPrint(f"Use Exporter '{self.exporter.__class__.__name__}'")
+            loggerPrint(f"Use Exporter {boldFont(f'{self.exporter.__class__.__name__}')}")
         else:
             loggerPrint(f"Procsr '{boldFont(f"{self.targetFileExt}Exporter")}' not found.", level=LogLevels.CRITICAL)
             exit(-1)

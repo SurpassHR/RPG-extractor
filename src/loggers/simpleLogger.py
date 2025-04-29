@@ -32,7 +32,7 @@ def loggerPrint(msg, level: LogLevels = LogLevels.INFO, frame = None) -> None:
 
 def _writeToFile(msg, level, frame):
     msg = re.sub(r'\033\[[0-9]{1,}m', '', msg)
-    logFile = os.path.join('logs', f"{getCurrTimeInFmt(fmt="%y-%m-%d")}.log")
+    logFile = os.path.join('logs', f"{getCurrTimeInFmt(fmt='%y-%m-%d')}.log")
     absPath = os.path.abspath(logFile)
     parentFolder = os.path.dirname(absPath)
     if not os.path.exists(parentFolder):
@@ -55,7 +55,7 @@ def _formatForFile(msg, level, frame):
     filePath = os.path.relpath(frame.filename)
     lineNo = str(frame.lineno)
     fileContext = f'{filePath}:{lineNo}'
-    fileContext = f'{fileContext:50}'
+    fileContext = fileContext.ljust(50)  # More explicit than f-string padding
 
     # 日志级别
     levelStr = f"{level.name:8}"
@@ -115,12 +115,12 @@ def italicFont(msg: str) -> str:
     return _stylize(msg, ANSIStyles.STYLE_ITALIC)
 
 def loggerPrintBanner():
-    loggerPrint(boldFont("""\033[31m██████╗░██████╗░░██████╗░░░░░░░███████╗██╗░░██╗████████╗██████╗░░█████╗░░█████╗░████████╗░█████╗░██████╗░\033[0m"""))
-    loggerPrint(boldFont("""\033[35m██╔══██╗██╔══██╗██╔════╝░░░░░░░██╔════╝╚██╗██╔╝╚══██╔══╝██╔══██╗██╔══██╗██╔══██╗╚══██╔══╝██╔══██╗██╔══██╗\033[0m"""))
-    loggerPrint(boldFont("""\033[34m██████╔╝██████╔╝██║░░██╗░█████╗█████╗░░░╚███╔╝░░░░██║░░░██████╔╝███████║██║░░╚═╝░░░██║░░░██║░░██║██████╔╝\033[0m"""))
-    loggerPrint(boldFont("""\033[36m██╔══██╗██╔═══╝░██║░░╚██╗╚════╝██╔══╝░░░██╔██╗░░░░██║░░░██╔══██╗██╔══██║██║░░██╗░░░██║░░░██║░░██║██╔══██╗\033[0m"""))
-    loggerPrint(boldFont("""\033[32m██║░░██║██║░░░░░╚██████╔╝░░░░░░███████╗██╔╝╚██╗░░░██║░░░██║░░██║██║░░██║╚█████╔╝░░░██║░░░╚█████╔╝██║░░██║\033[0m"""))
-    loggerPrint(boldFont("""\033[33m╚═╝░░╚═╝╚═╝░░░░░░╚═════╝░░░░░░░╚══════╝╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░╚═╝╚═╝░░╚═╝░╚════╝░░░░╚═╝░░░░╚════╝░╚═╝░░╚═╝\033[0m"""))
+    loggerPrint(boldFont("""\033[31m██████╗ ██████╗  ██████╗       ███████╗██╗  ██╗████████╗██████╗  █████╗  █████╗ ████████╗ █████╗ ██████╗ \033[0m"""))
+    loggerPrint(boldFont("""\033[35m██╔══██╗██╔══██╗██╔════╝       ██╔════╝╚██╗██╔╝╚══██╔══╝██╔══██╗██╔══██╗██╔══██╗╚══██╔══╝██╔══██╗██╔══██╗\033[0m"""))
+    loggerPrint(boldFont("""\033[34m██████╔╝██████╔╝██║  ██╗ █████╗█████╗   ╚███╔╝    ██║   ██████╔╝███████║██║  ╚═╝   ██║   ██║  ██║██████╔╝\033[0m"""))
+    loggerPrint(boldFont("""\033[36m██╔══██╗██╔═══╝ ██║  ╚██╗╚════╝██╔══╝   ██╔██╗    ██║   ██╔══██╗██╔══██║██║  ██╗   ██║   ██║  ██║██╔══██╗\033[0m"""))
+    loggerPrint(boldFont("""\033[32m██║  ██║██║     ╚██████╔╝      ███████╗██╔╝╚██╗   ██║   ██║  ██║██║  ██║╚█████╔╝   ██║   ╚█████╔╝██║  ██║\033[0m"""))
+    loggerPrint(boldFont("""\033[33m╚═╝  ╚═╝╚═╝      ╚═════╝       ╚══════╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝ ╚════╝    ╚═╝    ╚════╝ ╚═╝  ╚═╝\033[0m"""))
 
 if __name__ == '__main__':
     loggerPrint('haha', level=LogLevels.INFO)
