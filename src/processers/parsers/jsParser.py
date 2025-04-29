@@ -7,7 +7,7 @@ from src.loggers.simpleLogger import loggerPrint
 from src.processers.parsers.parserBase import ParserBase
 from src.utils.fileTools import writeListToFile
 from src.utils.timeTools import getCurrTimeInFmt
-from src.utils.decorators.execTimer import execTimer
+from src.utils.decorators.execTimer import timer
 
 class JsParser(ParserBase):
     def __init__(self):
@@ -115,7 +115,7 @@ class JsParser(ParserBase):
         # 其他类型直接返回
         return data
 
-    @execTimer
+    @timer
     def parse(self, data: str) -> list:
         res = self._getTargetFileKeyContent(data)
 

@@ -5,11 +5,13 @@ from src.loggers.simpleLogger import loggerPrint
 from src.processers.readers.readerBase import ReaderBase
 from src.utils.fileTools import isFileExists
 from src.utils.timeTools import getCurrTimeInFmt
+from src.utils.decorators.execTimer import timer
 
 class JsReader(ReaderBase):
     def __init__(self):
         super().__init__()
 
+    @timer
     def read(self):
         super().read()
 

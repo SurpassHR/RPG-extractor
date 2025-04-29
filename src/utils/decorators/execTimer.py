@@ -2,7 +2,7 @@ import time
 from functools import wraps
 from src.loggers.simpleLogger import loggerPrint, LogLevels
 
-def execTimer(func):
+def timer(func):
     @wraps(func)
     def wrap(*args, **kwargs):
         startTime = time.time()

@@ -5,16 +5,17 @@ from src.utils.fileTools import (
     readJson,
     writeDictToJsonFile
 )
-from src.utils.decorators.execTimer import execTimer
+from src.utils.decorators.execTimer import timer
 from src.utils.timeTools import getCurrTimeInFmt
 
 class JsonReader(ReaderBase):
     def __init__(self):
         super().__init__()
 
-    @execTimer
+    @timer
     def read(self) -> dict:
         super().read()
+
         jsonData = {}
         for file in self.fileList:
             data = readJson(file)

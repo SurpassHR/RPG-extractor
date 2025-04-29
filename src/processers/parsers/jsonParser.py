@@ -5,7 +5,7 @@ from src.loggers.simpleLogger import loggerPrint
 from src.processers.parsers.parserBase import ParserBase
 from src.utils.fileTools import writeListToFile
 from src.utils.timeTools import getCurrTimeInFmt
-from src.utils.decorators.execTimer import execTimer
+from src.utils.decorators.execTimer import timer
 
 class ContentAttrCode(IntEnum):
     TITLE = 101 # 标题
@@ -73,7 +73,7 @@ class JsonParser(ParserBase):
 
         return res
 
-    @execTimer
+    @timer
     def parse(self, data: dict) -> list:
         for k, v in data.items():
             if 'Map' in k:
