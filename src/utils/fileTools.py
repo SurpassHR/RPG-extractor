@@ -110,7 +110,7 @@ def writeDictToJsonFile(dataDict: dict, fileName: str, firstWrite: bool = True) 
             f.write('\n')
 
 ruby_file_lock = threading.Lock()
-def writeListToRubyFile(dataList: list[str], fileName: str, firstWrite: bool = True) -> None:
+def writeListToRubyFile(dataList: list, fileName: str, firstWrite: bool = True) -> None:
     with ruby_file_lock:
         if firstWrite:
             if os.path.exists(fileName):

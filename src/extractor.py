@@ -2,6 +2,7 @@ from src.publicDef.levelDefs import LogLevels
 from src.loggers.simpleLogger import loggerPrint, boldFont
 from src.utils.autoRegister import ClassManager
 from src.utils.fileTools import getAllFilesFromFolder, getFileExt, getFilesInFolderByType
+from src.utils.decorators.execTimer import timer
 
 from src.processers.readers import *
 from src.processers.parsers import *
@@ -87,6 +88,7 @@ class Extractor:
         self.formatter.init()
         self.exporter.init()
 
+    @timer
     def extract(self):
         readData = self.reader.read()
         parseData = self.parser.parse(readData)
