@@ -1,10 +1,10 @@
+import enchant
 from typing import Any
 
-import enchant
-
 from src.utils.autoRegister import AutoRegisterBase
+from src.utils.fileTools import FileTool
 
-class FormatterBase(AutoRegisterBase):
+class FormatterBase(AutoRegisterBase, FileTool):
     def __init__(self):
         self.lineEnd = ['.', '?', '!', '"', "'", ')', '\\']
         self.wordLineEnd = ['the', 'with', 'to']

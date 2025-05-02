@@ -1,6 +1,7 @@
 import json
 from typing import Any
-from rubymarshal.classes import RubyObject, UserDef
+import zlib
+from rubymarshal.classes import RubyObject, RubyString, UserDef
 
 from src.loggers.simpleLogger import loggerPrint, loggerPrintList
 
@@ -14,6 +15,32 @@ def hashableListDedup(dataList: list) -> list:
 
 def nonSeqListDedup(dataList: list) -> list:
     return list(set(dataList))
+
+def traverseListBytesDecode(dataList: list) -> list:
+    def __decode(item) -> str:
+        try:
+            item = item.decode('utf-8')
+        except:
+            item = zlib.decompress(item).decode('utf-8')
+        return item
+
+    retList = []
+    for item in dataList:
+        if isinstance(item, list):
+            retList.extend(traverseListBytesDecode(item))
+            continue
+        if isinstance(item, str):
+            retList.append(item)
+            continue
+        if isinstance(item, RubyString):
+            retList.append(item.text)
+            continue
+        if isinstance(item, bytes):
+            item = __decode(item)
+            retList.append(item)
+            continue
+
+    return retList
 
 def _traverseListDict(obj: Any) -> list:
     if obj == "":

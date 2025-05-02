@@ -8,7 +8,7 @@ from src.processers.readers.rubymarshalReader.rubymarshalDecoder import RubyMars
 from src.publicDef.levelDefs import LogLevels
 from src.processers.readers.readerBase import ReaderBase
 from src.utils.fileTools import getFileName, writeListToFile, writeListToRubyFile
-from src.utils.dataStructTools import getAtomObjFromRubyObj, listDedup
+from src.utils.dataStructTools import getAtomObjFromRubyObj, listDedup, traverseListBytesDecode
 from src.utils.decorators.execTimer import timer
 from src.utils.timeTools import getCurrTimeInFmt
 
@@ -33,35 +33,9 @@ class RxdataReader(ReaderBase):
 
         return ret
 
-    def _traverseListBytesDecode(self, dataList: list) -> list:
-        def __decode(item) -> str:
-            try:
-                item = item.decode('utf-8')
-            except:
-                item = zlib.decompress(item).decode('utf-8')
-            return item
-
-        retList = []
-        for item in dataList:
-            if isinstance(item, list):
-                retList.extend(self._traverseListBytesDecode(item))
-                continue
-            if isinstance(item, str):
-                retList.append(item)
-                continue
-            if isinstance(item, RubyString):
-                retList.append(item.text)
-                continue
-            if isinstance(item, bytes):
-                item = __decode(item)
-                retList.append(item)
-                continue
-
-        return retList
-
     def _readScriptsRxdata(self, filePath: str) -> list[RubyObject]:
         data = self._load(filePath)
-        ret = self._traverseListBytesDecode(data)
+        ret = traverseListBytesDecode(data)
         return ret
 
     def _readDoodasRxdata(self, filePath: str):

@@ -122,3 +122,15 @@ def writeListToRubyFile(dataList: list, fileName: str, firstWrite: bool = True) 
             if not item:
                 continue
             rbFile.write('{}'.format(item.replace('\r', '')))
+
+class FileTool:
+    def __init__(self) -> None:
+        pass
+
+    def _exportListToJson(self, data: list, exportJson: str) -> None:
+        jsonContent: dict = {}
+        for item in data:
+            key = val = f'{item}'
+            jsonContent[key] = val
+
+        writeDictToJsonFile(jsonContent, exportJson, True)
