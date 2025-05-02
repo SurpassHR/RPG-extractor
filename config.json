@@ -1,4 +1,5 @@
 {
-  "game_data_dir": "",
-  "output_data_dir": "output_files"
+  "game_data_dir": "F:\\Games\\25-03-31\\Curse of Pleasure v0.9\\Data",
+  "output_data_dir": "output_files",
+  "min_log_level": 1
 }
