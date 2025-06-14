@@ -107,9 +107,16 @@ def getAtomObjFromObj(fileData) -> list:
 
     return atomObjList
 
-def _hasDeeperRubyObj( obj: RubyObject):
+def _hasDeeperRubyObj(obj: RubyObject):
     rubyObjAttrs = obj.attributes
     return 'RubyObject' in str(rubyObjAttrs)
+
+def hasDeeperJsonObj(obj: dict | list):
+    if isinstance(obj, dict):
+        return any(isinstance(v, (dict, list)) for v in obj.values())
+    elif isinstance(obj, list):
+        return any(isinstance(item, (dict, list)) for item in obj)
+    return False
 
 def _traverseRubyObj(obj: RubyObject | Any) -> list[RubyObject]:
     if isinstance(obj, UserDef):
