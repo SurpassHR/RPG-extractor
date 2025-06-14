@@ -2,6 +2,7 @@
 .vscode
 __pycache__
 venv
+.venv
 debug_files/atomRubyObjs.txt -diff
 output/
 output_files/

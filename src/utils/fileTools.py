@@ -80,7 +80,7 @@ def dumpListToFile(dataList: list, fileName: str, firstWrite: bool = True) -> No
             if not os.path.exists(os.path.dirname(fileName)):
                 os.makedirs(os.path.dirname(fileName))
         if dataList is not None and dataList != []:
-            with open(fileName, 'a') as f:
+            with open(fileName, 'a', encoding='utf-8') as f:
                 dataList = [item for item in dataList if item != '']
                 json.dump(dataList, f, ensure_ascii=False, indent=4)
 
@@ -105,7 +105,7 @@ def writeDictToJsonFile(dataDict: dict, fileName: str, firstWrite: bool = True) 
             if not os.path.exists(os.path.dirname(fileName)):
                 os.makedirs(os.path.dirname(fileName))
     if dataDict is not None and dataDict != {}:
-        with open(fileName, 'a') as f:
+        with open(fileName, 'a', encoding='utf-8') as f:
             json.dump(dataDict, f, ensure_ascii=False, indent=4)
             f.write('\n')
 
