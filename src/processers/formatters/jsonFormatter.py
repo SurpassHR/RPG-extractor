@@ -14,6 +14,7 @@ class JsonFormatter(FormatterBase):
         patternDict: dict[re.Pattern[str], str] = {
             re.compile(r'\\n[cr]*<\\c\[\d{1,3}\].*\\c>'): '',
             re.compile(r'\\\w\[\d{1,3}\]'): '\n',
+            re.compile(r'\\CR'): '\n',
             re.compile(r'\\c'): '\n'
         }
 

@@ -41,7 +41,7 @@ def _writeToFile(msg, level, frame):
     # 获取格式化日志内容（不含ANSI颜色代码）
     logContent = _formatForFile(msg, level, frame)
 
-    with open(absPath, 'a') as f:
+    with open(absPath, 'a', encoding='utf-8') as f:
         f.write(logContent + '\n')
 
 def _formatForFile(msg, level, frame):
@@ -87,7 +87,7 @@ def _printFormatted(msg, level, frame):
 
 def loggerPrintList(dataList: list) -> None:
     if not isinstance(dataList, list):
-        loggerPrint(f"Not a list.", frame=inspect.stack()[1], level=LogLevels.WARNING)
+        loggerPrint("Not a list.", frame=inspect.stack()[1], level=LogLevels.WARNING)
         return
     if dataList is not None and dataList != []:
         for item in dataList:
@@ -99,7 +99,7 @@ def loggerPrintList(dataList: list) -> None:
 
 def loggerPrintDict(dataDict: dict) -> None:
     if not isinstance(dataDict, dict):
-        loggerPrint(f"Not a dict.", frame=inspect.stack()[1], level=LogLevels.WARNING)
+        loggerPrint("Not a dict.", frame=inspect.stack()[1], level=LogLevels.WARNING)
         return
     if dataDict is not None and dataDict != {}:
         for key, value in dataDict.items():

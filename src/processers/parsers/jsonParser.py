@@ -51,61 +51,115 @@ class JsonParser(ParserBase):
     def _procDict(self, data: dict):
         pass
 
-    def _traverseToFindTargetText(self, data: dict | list, targetK: list[str] | str, targetV: Any) -> list:
+    def _traverseToFindTargetObj(self, data: dict | list, targetK: list[str] | str, targetV: Any) -> list:
         res = []
 
         if isinstance(data, list):
             for item in data:
                 if isinstance(item, list):
-                    res.extend(self._traverseToFindTargetText(item, targetK, targetV))
+                    res.extend(self._traverseToFindTargetObj(item, targetK, targetV))
                     continue
                 if isinstance(item, dict):
                     v = item.get(targetK)
                     if v and (v == targetV or targetV == '*'):
                         res.append(item)
-                        continue
-                    res.extend(self._traverseToFindTargetText(item, targetK, targetV))
+                    res.extend(self._traverseToFindTargetObj(item, targetK, targetV))
         elif isinstance(data, dict):
             for key in data.keys():
                 val = data[key]
                 if isinstance(val, list):
-                    res.extend(self._traverseToFindTargetText(val, targetK, targetV))
+                    res.extend(self._traverseToFindTargetObj(val, targetK, targetV))
                     continue
                 if isinstance(val, dict):
                     v = val.get(targetK)
                     if v and (v == targetV or targetV == '*'):
                         res.append(val)
-                        continue
-                    res.extend(self._traverseToFindTargetText(val, targetK, targetV))
+                    res.extend(self._traverseToFindTargetObj(val, targetK, targetV))
 
         return res
 
-    def _traverseToGetTargetText(self, data: dict | list, targetK: str, targetV: str) -> list:
+    def _traverseToGetTargetObj(self, data: dict | list, targetK: str, targetV: str) -> list:
         res = []
 
         if isinstance(data, list):
             for item in data:
                 if isinstance(item, list):
-                    res.extend(self._traverseToFindTargetText(item, targetK, targetV))
+                    res.extend(self._traverseToFindTargetObj(item, targetK, targetV))
                     continue
                 if isinstance(item, dict):
                     v = item.get(targetK)
                     if v and (v == targetV or targetV == '*'):
                         res.append(v)
                         continue
-                    res.extend(self._traverseToFindTargetText(item, targetK, targetV))
+                    res.extend(self._traverseToFindTargetObj(item, targetK, targetV))
         elif isinstance(data, dict):
             for key in data.keys():
                 val = data[key]
                 if isinstance(val, list):
-                    res.extend(self._traverseToFindTargetText(val, targetK, targetV))
+                    res.extend(self._traverseToFindTargetObj(val, targetK, targetV))
                     continue
                 if isinstance(val, dict):
                     v = val.get(targetK)
                     if v and (v == targetV or targetV == '*'):
                         res.append(v)
                         continue
-                    res.extend(self._traverseToFindTargetText(val, targetK, targetV))
+                    res.extend(self._traverseToFindTargetObj(val, targetK, targetV))
+
+        return res
+
+    def _traverseToFindTargetAtomObj(self, data: dict | list, targetK: list[str] | str, targetV: Any) -> list:
+        res = []
+
+        if isinstance(data, list):
+            for item in data:
+                if isinstance(item, list):
+                    res.extend(self._traverseToFindTargetObj(item, targetK, targetV))
+                    continue
+                if isinstance(item, dict):
+                    v = item.get(targetK)
+                    if v and (v == targetV or targetV == '*'):
+                        res.append(v)
+                    res.extend(self._traverseToFindTargetObj(item, targetK, targetV))
+        elif isinstance(data, dict):
+            for key in data.keys():
+                val = data[key]
+                if isinstance(val, list):
+                    res.extend(self._traverseToFindTargetObj(val, targetK, targetV))
+                    continue
+                if isinstance(val, dict):
+                    v = val.get(targetK)
+                    if v and (v == targetV or targetV == '*'):
+                        res.append(v)
+                    res.extend(self._traverseToFindTargetObj(val, targetK, targetV))
+
+        return res
+
+    def _traverseToGetTargetAtomObj(self, data: dict | list, targetK: str, targetV: str) -> list:
+        res = []
+
+        if isinstance(data, list):
+            for item in data:
+                if isinstance(item, list):
+                    res.extend(self._traverseToFindTargetAtomObj(item, targetK, targetV))
+                    continue
+                if isinstance(item, dict):
+                    v = item.get(targetK)
+                    if v and (v == targetV or targetV == '*'):
+                        res.append(v)
+                        continue
+                    res.extend(self._traverseToFindTargetAtomObj(item, targetK, targetV))
+        elif isinstance(data, dict):
+            for key in data.keys():
+                val = data[key]
+                if isinstance(val, list):
+                    res.extend(self._traverseToFindTargetAtomObj(val, targetK, targetV))
+                    continue
+                if isinstance(val, dict):
+                    v = val.get(targetK)
+                    if v and (v == targetV or targetV == '*'):
+                        res.append(v)
+                        continue
+                    res.extend(self._traverseToFindTargetAtomObj(val, targetK, targetV))
 
         return res
 
@@ -124,16 +178,26 @@ class JsonParser(ParserBase):
 
         loggerPrint(f"Filtered {self.parseNeededFile.getFileNum()} data from raw data.")
 
-        dialogueJsonCodeList = self._traverseToFindTargetText(
+        dialogueJsonCodeList = self._traverseToFindTargetObj(
             data=self.parseNeededFile.getMapFiles(),
             targetK='code',
             targetV=ContentAttrCode.TEXT_DISP.value
         )
+        dialogueJsonCodeList.extend(self._traverseToFindTargetObj(
+            data=self.parseNeededFile.getMapFiles(),
+            targetK='code',
+            targetV=ContentAttrCode.OPTION.value
+        ))
+        dialogueJsonCodeList.extend(self._traverseToFindTargetObj(
+            data=self.parseNeededFile.getMapFiles(),
+            targetK='code',
+            targetV=ContentAttrCode.TITLE.value
+        ))
         dumpListToFile(
             dialogueJsonCodeList,
             f"output/parser/json/{getCurrTimeInFmt('%y-%m-%d_%H-%M')}/dialogueJsonCodeList.json"
         )
-        mapNameJsonCodeList = self._traverseToGetTargetText(
+        mapNameJsonCodeList = self._traverseToGetTargetObj(
             data=self.parseNeededFile.getMapFiles(),
             targetK='displayName',
             targetV='*'
@@ -143,7 +207,7 @@ class JsonParser(ParserBase):
             f"output/parser/json/{getCurrTimeInFmt('%y-%m-%d_%H-%M')}/mapDisplayNameJsonCodeList.json"
         )
 
-        itemJsonCodeList = self._traverseToFindTargetText(
+        itemJsonCodeList = self._traverseToFindTargetObj(
             data=self.parseNeededFile.getItemFiles(),
             targetK='name',
             targetV='*'
@@ -153,28 +217,45 @@ class JsonParser(ParserBase):
             f"output/parser/json/{getCurrTimeInFmt('%y-%m-%d_%H-%M')}/itemJsonCodeList.json"
         )
 
-        specialJsonCodeList = self._traverseToGetTargetText(
-            data=self.parseNeededFile.getSpecialFiles(),
-            targetK='name',
-            targetV='*'
-        )
-        specialJsonCodeList.extend(self._traverseToGetTargetText(
-            data=self.parseNeededFile.getSpecialFiles(),
-            targetK='switches',
-            targetV='*'
-        ))
+        specialJsonCodeList: list = []
+        specialKeyList = [
+            "name",
+            "switches",
+            "basic",
+            "commands",
+            "params",
+            "variables",
+        ]
+        for k in specialKeyList:
+            specialJsonCodeList.extend(self._traverseToGetTargetAtomObj(
+                data=self.parseNeededFile.getSpecialFiles(),
+                targetK=k,
+                targetV='*'
+            ))
         dumpListToFile(
             specialJsonCodeList,
             f"output/parser/json/{getCurrTimeInFmt('%y-%m-%d_%H-%M')}/specialJsonCodeList.json"
         )
 
         rawDataList: list = []
-        rawDataList.extend([item['parameters'][0] for item in dialogueJsonCodeList])
+        for item in dialogueJsonCodeList:
+            code = item.get('code')
+            if code == ContentAttrCode.TEXT_DISP.value:
+                rawDataList.append(item['parameters'][0])
+                continue
+            if code == ContentAttrCode.OPTION.value:
+                rawDataList.extend(item['parameters'][0])
+                continue
+            if code == ContentAttrCode.TITLE.value:
+                rawDataList.append(item['parameters'][-1])
+                continue
+
         for item in itemJsonCodeList:
             if item.get('name'):  # 确保 item['name'] 不是假值，避免意外情况
                 rawDataList.append(item['name'])
             if item.get('description'): # 确保 item['description'] 不是假值
                 rawDataList.append(item['description'])
+
         for item in specialJsonCodeList:
             if isinstance(dict, str) and item.get('name'):
                 rawDataList.append(item['name'])
@@ -182,6 +263,8 @@ class JsonParser(ParserBase):
                 rawDataList.extend(item)
 
         rawDataList.extend(mapNameJsonCodeList)
+
+        rawDataList = [item for item in rawDataList if item and item != ""]
         dumpListToFile(
             rawDataList,
             f"output/parser/json/{getCurrTimeInFmt('%y-%m-%d_%H-%M')}/rawDataList.json"

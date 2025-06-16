@@ -2,14 +2,15 @@
 
 ## Description
 
-This is a tool for extracting RPG(Role Playing Game) related data that has `.rxdata` or `.rvdata` ext.
+This is a tool for extracting RPG(Role Playing Game) related data that has `.rxdata`, `.rvdata`, `.json` and `.js` ext.
+The structure is extensible as you can add your 'processer' to src/processers.
 
 ## Usage
 
 ```shell
 bash ./init_dev_env.sh
-# edit config.json
-python ./extractor.py
+# edit config.json to set the game data you want to extract from
+python ./run.py
 ```
 
 ## Supported game data file type
@@ -37,3 +38,5 @@ python ./extractor.py
 - [ ] GUI
 
 - [x] Make reader module more extensible to support other format like json
+
+- [x] Auto guessing the main file type under the set path
