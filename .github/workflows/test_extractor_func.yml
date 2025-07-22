@@ -1,0 +1,56 @@
+name: Test extractor function
+
+on:
+  # 触发方式: 手动触发和推送 mater 分支时触发
+  workflow_dispatch:
+  # push:
+  #   branches: [master]
+
+jobs:
+  download_from_gdrive:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v4
+
+    - name: Install gdrive tool
+      run: |
+        curl -L -o gdrive.tar.gz https://github.com/prasmussen/gdrive/releases/download/2.1.0/gdrive-linux-x64.tar.gz
+        tar -xzf gdrive.tar.gz
+        sudo install gdrive /usr/local/bin/gdrive
+
+    - name: Setup service account credentials
+      run: |
+        echo "${{ secrets.GDRIVE_SERVICE_ACCOUNT_JSON }}" > sa.json
+
+    - name: Authenticate with Google Drive
+      run: |
+        gdrive about --service-account sa.json
+
+    # 下载单个文件
+    # - name: Download file from Google Drive
+    #   run: |
+    #     gdown https://drive.google.com/uc?id=<FILE_ID>
+
+    # - name: Download files list
+    #   run: |
+    #     FILE_IDS=()
+    #     for FILE_ID in "${FILE_IDS[@]}"
+    #     do
+    #       echo "Downloading $FILE_ID ..."
+    #       gdrive download --service-account sa.json "$FILE_ID" --force
+    #     done
+
+    # 下载文件夹
+    - name: Download folder from Google Drive
+      run: |
+        FOLDER_ID="1df-sCx8eXkaxV1fiUoos6shYxBg0H_Do" # Curse of Pleasure v0.9
+        gdrive download --recursive --service-account sa.json --path ./gdrive-data "$FOLDER_ID"
+
+    - name: Run test
+      run: |
+        echo "Current directory: $PWD"
+        ls -l ./gdrive-data
+        # 示例命令
+        # python script.py ./gdrive-data/input.csv
