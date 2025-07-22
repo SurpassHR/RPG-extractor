@@ -7,6 +7,7 @@ from src.utils.fileTools import isFileExists
 from src.utils.timeTools import getCurrTimeInFmt
 from src.utils.decorators.execTimer import timer
 
+
 class JsReader(ReaderBase):
     def __init__(self):
         super().__init__()
@@ -15,26 +16,30 @@ class JsReader(ReaderBase):
     def read(self):
         super().read()
 
-        targetFile = 'plugins.js'
+        targetFile = "plugins.js"
         for item in self.fileList:
             if targetFile in item:
                 targetFile = item
                 break
 
         if not isFileExists(targetFile):
-            loggerPrint(f"Target file '{targetFile}' not in list.", level=LogLevels.WARNING)
+            loggerPrint(
+                f"Target file '{targetFile}' not in list.", level=LogLevels.WARNING
+            )
             exit(-1)
 
-        fd = open(targetFile, 'r', encoding='utf-8')
+        fd = open(targetFile, "r", encoding="utf-8")
 
         if fd:
             data = fd.read()
-            debugFile = f"output/reader/js/{getCurrTimeInFmt('%y-%m-%d_%H-%M')}/rawPlugins.js"
+            debugFile = (
+                f"output/reader/js/{getCurrTimeInFmt('%y-%m-%d_%H-%M')}/rawPlugins.js"
+            )
             if os.path.exists(debugFile):
                 os.remove(debugFile)
             if not os.path.exists(os.path.dirname(debugFile)):
                 os.makedirs(os.path.dirname(debugFile))
-            with open(debugFile, 'a') as f:
+            with open(debugFile, "a", encoding="utf-8") as f:
                 f.write(data)
             return data
         else:
