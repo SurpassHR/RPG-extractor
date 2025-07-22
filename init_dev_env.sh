@@ -1,35 +1,98 @@
 #!/bin/bash
+# suggest using git-bash to execute
+
+# global constants
+VENV_ROOT=./.venv
+DOT_GIT_FILE=./.git
+DOT_GIT_EXCLUDE_LIST=(
+    "__pycache__"
+    ".history"
+    ".venv"
+)
+
+# check if function's in-params number is valid
+function checkParamNum() {
+    if [ $# -ne 2 ]; then
+        echo -e "need 2 params num for comparison"
+    fi
+
+    argNum=$1
+    expectArgNum=$2
+    if [ ${argNum} -ne ${expectArgNum} ]; then
+        echo -e "in-params number is not valid, expect: ${expectArgNum}, actual: ${argNum}"
+        return 1
+    fi
+}
 
 # create python virtual environment
-if [ -d "./.venv" ]; then
-    echo "venv already exists"
-else
-    echo "Creating venv"
-    python -m venv .venv
-fi
+function createVenv() {
+    expectArgNum=1
+    checkParamNum $# ${expectArgNum}
+
+    venvPath=$1
+    if [ -d "${venvPath}" ]; then
+        echo "venv already exists"
+    else
+        echo "Creating venv"
+        python -m venv ${venvPath}
+    fi
+}
 
 # activate venv
-case "$OSTYPE" in
-    linux-gnu)
-        source .venv/bin/activate
-        ;;
-    *)
-        source .venv/Scripts/activate
-        ;;
-esac
+function activateVenv() {
+    expectArgNum=1
+    checkParamNum $# ${expectArgNum}
+
+    venvPath=$1
+    case "$OSTYPE" in
+        linux-gnu)
+            source .venv/bin/activate
+            ;;
+        *)
+            source .venv/Scripts/activate
+            ;;
+    esac
+}
 
 # install dependencies
-python -m pip install --upgrade pip
-pip install -r requirements.txt
+function installDeps() {
+    # update pip
+    python -m pip install --upgrade pip
+    # install all requirements recursively
+    find . -name "requirements.txt" -exec pip install -r {} \;
+}
 
-git_exclude_content=`cat .git/info/exclude | grep -E '__pycache__|.history|.venv'`
+# table-driven add some exclude items in .git/info/exclude
+function addExcludes() {
+    if [ -d "${DOT_GIT_FILE}" ]; then
+        exclude_file="${DOT_GIT_FILE}/info/exclude"
 
-if [[ -n $git_exclude_content ]]; then
-    echo "git exclude already contains __pycache__, .history, and .venv"
-else
-    echo "\n"
-    echo "__pycache__" >> .git/info/exclude
-    echo ".history" >> .git/info/exclude
-    echo ".venv" >> .git/info/exclude
-    echo "Added __pycache__, .history, and .venv to git exclude"
-fi
+        # check if exist
+        found=0
+        if [ -f "${exclude_file}" ]; then
+            for pattern in "${DOT_GIT_EXCLUDE_LIST[@]}"; do
+                if grep -qF "${pattern}" "${exclude_file}"; then
+                    found=1
+                    break
+                fi
+            done
+        fi
+
+        # write exclude items into exclude file
+        printf -v joined '%s, ' "${DOT_GIT_EXCLUDE_LIST[@]}"
+        if [ $found -eq 1 ]; then
+            echo "git exclude already contains ${joined%, }"
+        else
+            echo
+
+            printf "%s\n" "${DOT_GIT_EXCLUDE_LIST[@]}" >> "${exclude_file}"
+
+            echo "Added ${joined%, } to git exclude"
+        fi
+    fi
+}
+
+createVenv ${VENV_ROOT}
+activateVenv ${VENV_ROOT}
+installDeps
+addExcludes
