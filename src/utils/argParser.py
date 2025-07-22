@@ -18,6 +18,9 @@ class ArgParser:
         self.parser.add_argument(
             "--outputFolder", type=str, help="Path to the output folder"
         )
+        self.parser.add_argument(
+            "--gui", action="store_true", help="Launch the GUI application"
+        )
 
     def parse_args(self):
         """

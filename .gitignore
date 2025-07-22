@@ -6,4 +6,4 @@ venv
 debug_files/atomRubyObjs.txt -diff
 output/
 output_files/
-logs/
+*logs/
