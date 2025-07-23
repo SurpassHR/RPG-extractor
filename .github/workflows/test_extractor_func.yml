@@ -5,6 +5,9 @@ on:
   push:
     branches: [master]
 
+env:
+  DOWNLOAD_FOLDER: "gdrive_data"
+
 jobs:
   download_from_gdrive:
     runs-on: ubuntu-latest
@@ -21,13 +24,19 @@ jobs:
 
     - name: Setup service account credentials
       run: |
-        echo "${{ secrets.GDRIVE_SERVICE_ACCOUNT_SECRET }}" > secret.json
-        echo "${{ secrets.GDRIVE_SERVICE_ACCOUNT_TOKENS }}" > tokens.json
-        tar -cf gdrive_export.tar secret.json tokens.json
+        dirName=${{ secrets.GDRIVE_SERVICE_ACCOUNT_NAME }}
+        mkdir ${dirName}
+        echo "${{ secrets.GDRIVE_SERVICE_ACCOUNT_SECRET }}" > ${dirName}/secret.json
+        echo "${{ secrets.GDRIVE_SERVICE_ACCOUNT_TOKENS }}" > ${dirName}/tokens.json
+        tar -cf gdrive_export.tar ${dirName}
+        rm -rf ${dirName}
 
     - name: Authenticate with Google Drive
       run: |
         gdrive account import ./gdrive_export.tar
+
+    - name: Make download folder
+      run: mkdir ${{ env.DOWNLOAD_FOLDER }}
 
     # - name: Download files list
     #   run: |
@@ -35,20 +44,20 @@ jobs:
     #     for FILE_ID in "${FILE_IDS[@]}"
     #     do
     #       echo "Downloading $FILE_ID ..."
-    #       gdrive download "$FILE_ID"
+    #       gdrive files download "$FILE_ID" --destination ${{ env.DOWNLOAD_FOLDER }}
     #     done
 
     # Download folder
     # - name: Download folder from Google Drive
     #   run: |
-    #     FILE_ID="1df-sCx8eXkaxV1fiUoos6shYxBg0H_Do" # Curse of Pleasure v0.9
-    #     gdrive download --path ./gdrive-data "$FOLDER_ID"
+    #     FOLDER_ID="1df-sCx8eXkaxV1fiUoos6shYxBg0H_Do"
+    #     gdrive files download --recursive --destination ${{ env.DOWNLOAD_FOLDER }} "$FOLDER_ID"
 
-    # Download file and extract
+    # Download compressed data and extract
     - name: Download file from Google Drive
       run: |
         FILE_ID="14WIwqL2D0HfRA49lf_Q6VzMniS9Q14Kr" # "Curse of pleasure v0.9.tar.gz"
-        gdrive download --path ./gdrive-data "$FOLDER_ID"
+        gdrive files download ${FILE_ID} --destination ${{ env.DOWNLOAD_FOLDER }}
 
     - name: Run test
       run: |
