@@ -1,10 +1,9 @@
 name: Test extractor function
-
 on:
   # 触发方式: 手动触发和推送 mater 分支时触发
   workflow_dispatch:
-  # push:
-  #   branches: [master]
+  push:
+    branches: [master]
 
 jobs:
   download_from_gdrive:
@@ -28,7 +27,7 @@ jobs:
 
     - name: Authenticate with Google Drive
       run: |
-        gdrive account import gdrive_export.tar
+        gdrive account import ./gdrive_export.tar
 
     # - name: Download files list
     #   run: |
@@ -52,4 +51,5 @@ jobs:
         gdrive download --path ./gdrive-data "$FOLDER_ID"
 
     - name: Run test
-      run:
+      run: |
+        echo -e "Enter run test."
