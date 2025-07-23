@@ -40,3 +40,5 @@ python ./run.py
 - [x] Make reader module more extensible to support other format like json
 
 - [x] Auto guessing the main file type under the set path
+
+- [x] Support cli arguments, see `argParser.py`
