@@ -30,6 +30,10 @@ jobs:
       with:
         python-version: '3.12'
 
+    - name: Prepare environment
+      working-directory: ${{ env.REPO_FOLDER }}
+      run: pip install -r requirements.txt
+
     - name: Setup service account credentials
       working-directory: ./
       run: |
@@ -76,6 +80,7 @@ jobs:
         )
         EXTRACTED_FOLDERS=()
         DOWNLOAD_DIR="${{ runner.workspace }}/gdrive_data"
+
         for item in "${FILE_INFO[@]}"
         do
           FILE_ID="${item%%:*}"
@@ -88,16 +93,19 @@ jobs:
           # Try to extract as a tar archive, letting tar auto-detect compression
           EXTRACTED_DIR=$(tar -tf "${DOWNLOAD_DIR}/${FILENAME}" 2>/dev/null | head -1 | cut -f1 -d"/")
           tar -xf "${DOWNLOAD_DIR}/${FILENAME}" -C "${DOWNLOAD_DIR}"
+
           EXTRACTED_FOLDERS+=("${DOWNLOAD_DIR}/${EXTRACTED_DIR}")
         done
-        # For now, we only pass the first extracted folder.
-        # If multiple folders need to be handled, the logic in the next step should be updated.
-        echo "extracted_folder=${EXTRACTED_FOLDERS[0]}" >> $GITHUB_OUTPUT
+
+        echo "extracted_folder=${EXTRACTED_FOLDERS[*]}" >> ${GITHUB_OUTPUT}
 
     - name: Run test
       working-directory: ${{ env.REPO_FOLDER }}
       run: |
-        # init server environment
-        pip install -r requirements.txt
-        # test
-        python run.py --dataFolder "${{ steps.download_and_extract.outputs.extracted_folder }}" --outputFolder "${{ runner.workspace }}/extract_data"
+        extract_folder='${{ steps.download_and_extract.outputs.extracted_folder }}'
+        for folder in ${extract_folder}
+        do
+          game_name=$(basename "${folder}")
+          echo "Processing game ${game_name}..."
+          python run.py --dataFolder ${folder} --outputFolder "${{ runner.workspace }}/extract_data" --title ${game_name}
+        done

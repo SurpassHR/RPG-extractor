@@ -15,8 +15,9 @@ def main():
         config = loadConfig()
         dataFolder: str = args.dataFolder or config.get("game_data_dir", "")
         outputFolder: str = args.outputFolder or config.get("output_data_dir", "")
+        title: str = args.title
 
-        dataExtractor = Extractor(dataFolder=dataFolder, outputFolder=outputFolder)
+        dataExtractor = Extractor(dataFolder=dataFolder, outputFolder=outputFolder, title=title)
         dataExtractor.extract()
 
 

@@ -15,10 +15,11 @@ from src.processers.exporters import ExporterBase
 
 
 class Extractor:
-    def __init__(self, dataFolder: str, outputFolder: str):
+    def __init__(self, dataFolder: str, outputFolder: str, title: str = ""):
         self.classManager = ClassManager()
         self.dataFolder: str = dataFolder
         self.outputFolder: str = outputFolder
+        self.title: str = title
         self.fileList: list[str] = []
         self.targetFileExt: str = ""
 
@@ -45,9 +46,7 @@ class Extractor:
                 self.targetFileExt = file
                 maxNum = fileExtNum[file]
 
-        loggerPrint(
-            f"{maxNum} files with ext '{boldFont(self.targetFileExt)}' is the most."
-        )
+        loggerPrint(f"{maxNum} files with ext '{boldFont(self.targetFileExt)}' is the most.")
 
     # 初始化各处理模块
     def _initProcessers(self):
@@ -79,9 +78,7 @@ class Extractor:
         formatterCls = self.classManager.getFormatter(fileExt)
         if formatterCls:
             self.formatter = formatterCls()
-            loggerPrint(
-                f"Use Formatter {boldFont(f'{self.formatter.__class__.__name__}')}"
-            )
+            loggerPrint(f"Use Formatter {boldFont(f'{self.formatter.__class__.__name__}')}")
         else:
             loggerPrint(
                 f"Procsr '{boldFont(f'{self.targetFileExt}Formatter')}' not found.",
@@ -91,10 +88,8 @@ class Extractor:
 
         exporterCls = self.classManager.getExporter(fileExt)
         if exporterCls:
-            self.exporter = exporterCls(self.outputFolder)
-            loggerPrint(
-                f"Use Exporter {boldFont(f'{self.exporter.__class__.__name__}')}"
-            )
+            self.exporter = exporterCls(self.outputFolder, self.title)
+            loggerPrint(f"Use Exporter {boldFont(f'{self.exporter.__class__.__name__}')}")
         else:
             loggerPrint(
                 f"Procsr '{boldFont(f'{self.targetFileExt}Exporter')}' not found.",
