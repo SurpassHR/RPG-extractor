@@ -39,30 +39,13 @@ function createVenv() {
     fi
 }
 
-# activate venv
-function activateVenv() {
-    expectArgNum=1
-    checkParamNum $# ${expectArgNum}
-
-    venvPath=$1
-    case "$OSTYPE" in
-        linux-gnu)
-            source .venv/bin/activate
-            ;;
-        *)
-            source .venv/Scripts/activate
-            ;;
-    esac
-}
-
 # install dependencies
 function installDeps() {
     # update pip
-    python -m pip install --upgrade pip
+    ${VENV_ROOT}/bin/python -m pip install --upgrade pip
     # install cli requirements only
-    pip install -r requirements.txt
+    ${VENV_ROOT}/bin/pip install -r requirements.txt
 }
 
 createVenv ${VENV_ROOT}
-activateVenv ${VENV_ROOT}
 installDeps

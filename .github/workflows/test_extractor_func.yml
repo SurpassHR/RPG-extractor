@@ -8,9 +8,7 @@ on:
 env:
   # slice repo name from repo full path
   REPO_NAME: "$(echo ${{ github.repository }} | cut -d'/' -f2)"
-  REPO_FOLDER: "${REPO_NAME}/${REPO_NAME}"
-  DOWNLOAD_FOLDER: "gdrive_data"
-  OUTPUT_FOLDER: "extract_data"
+  REPO_FOLDER: "${{ github.workspace }}"
 
 jobs:
   download_from_gdrive:
@@ -26,6 +24,11 @@ jobs:
         curl -L -o gdrive.tar.gz https://github.com/glotlabs/gdrive/releases/download/3.9.1/gdrive_linux-x64.tar.gz
         tar -xzf gdrive.tar.gz
         sudo install gdrive /usr/local/bin/gdrive
+
+    - name: Install python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
 
     - name: Setup service account credentials
       working-directory: ./
@@ -45,8 +48,8 @@ jobs:
     - name: Create folders
       working-directory: ./
       run: |
-        mkdir ${{ env.DOWNLOAD_FOLDER }}
-        mkdir ${{ env.OUTPUT_FOLDER }}
+        mkdir -p ${{ runner.workspace }}/gdrive_data
+        mkdir -p ${{ runner.workspace }}/extract_data
 
     # - name: Download files list
     #   run: |
@@ -72,26 +75,29 @@ jobs:
           "14WIwqL2D0HfRA49lf_Q6VzMniS9Q14Kr:Curse of pleasure v0.9.tar.gz"
         )
         EXTRACTED_FOLDERS=()
+        DOWNLOAD_DIR="${{ runner.workspace }}/gdrive_data"
         for item in "${FILE_INFO[@]}"
         do
           FILE_ID="${item%%:*}"
           FILENAME="${item#*:}"
-          gdrive files download "${FILE_ID}" --destination ${{ env.DOWNLOAD_FOLDER }}
+
+          gdrive files download "${FILE_ID}" --destination "${DOWNLOAD_DIR}"
+
           echo "Extracting \"${FILENAME}\"..."
           # Extract and find the top-level directory created
           # Try to extract as a tar archive, letting tar auto-detect compression
-          EXTRACTED_DIR=$(tar -tf "${{ env.DOWNLOAD_FOLDER }}/${FILENAME}" | head -1 | cut -f1 -d"/")
-          tar -xf "${{ env.DOWNLOAD_FOLDER }}/${FILENAME}" -C "${{ env.DOWNLOAD_FOLDER }}"
-          EXTRACTED_FOLDERS+=("${{ env.DOWNLOAD_FOLDER }}/${EXTRACTED_DIR}")
+          EXTRACTED_DIR=$(tar -tf "${DOWNLOAD_DIR}/${FILENAME}" 2>/dev/null | head -1 | cut -f1 -d"/")
+          tar -xf "${DOWNLOAD_DIR}/${FILENAME}" -C "${DOWNLOAD_DIR}"
+          EXTRACTED_FOLDERS+=("${DOWNLOAD_DIR}/${EXTRACTED_DIR}")
         done
         # For now, we only pass the first extracted folder.
         # If multiple folders need to be handled, the logic in the next step should be updated.
-        echo "::set-output name=extracted_folder::${EXTRACTED_FOLDERS[0]}"
+        echo "extracted_folder=${EXTRACTED_FOLDERS[0]}" >> $GITHUB_OUTPUT
 
     - name: Run test
       working-directory: ${{ env.REPO_FOLDER }}
       run: |
         # init server environment
-        bash init_dev_cli_env.sh
+        pip install -r requirements.txt
         # test
-        python run.py --dataFolder "${{ steps.download_and_extract.outputs.extracted_folder }}" --outputFolder "${{ env.OUTPUT_FOLDER }}"
+        python run.py --dataFolder "${{ steps.download_and_extract.outputs.extracted_folder }}" --outputFolder "${{ runner.workspace }}/extract_data"
