@@ -135,8 +135,16 @@ jobs:
           echo "No directories found to zip."
         fi
 
-    - name: Create Release and Upload Assets
+    - name: Create release and upload assets
+      # create release only when pushes a tag
+      if: startsWith(github.ref, 'refs/tags')
       uses: softprops/action-gh-release@v1
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         files: ${{ runner.workspace }}/extract_data/*.zip
+
+    - name: Upload extracted data as artifact
+      uses: actions/upload-artifact@v4 # Using the latest recommended version
+      with:
+        name: extracted-zip-files # The name of the artifact. This should be unique per workflow run if you upload multiple artifacts.
+        path: ${{ runner.workspace }}/extract_data/*.zip # The path to the files or directories to upload. Wildcards are supported.
