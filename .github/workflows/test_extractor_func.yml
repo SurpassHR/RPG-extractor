@@ -81,20 +81,28 @@ jobs:
         EXTRACTED_FOLDERS=()
         DOWNLOAD_DIR="${{ runner.workspace }}/gdrive_data"
 
+        ls /home/runner/work/RPG-extractor/gdrive_data
+        # ls /home/runner/work/RPG-extractor/gdrive_data/Curse\ of\ pleasure\ v0.9
+
         for item in "${FILE_INFO[@]}"
         do
           FILE_ID="${item%%:*}"
-          FILENAME="${item#*:}"
+          FILE_NAME="${item#*:}"
+          GAME_NAME="${FILE_NAME%.tar.gz}"
+          COMPRESSED_FILE_PATH="${DOWNLOAD_DIR}/${FILE_NAME}"
+          UNCOMPRESS_FOLDER_PATH="${DOWNLOAD_DIR}/${FILE_NAME}"
+          UNCOMPRESS_FOLDER_PATH="${UNCOMPRESS_FOLDER_PATH%.tar.gz}"
+          echo "FILE_ID: ${FILE_ID}, FILE_NAME: ${FILE_NAME}， GAME_NAME: ${GAME_NAME}"
 
           gdrive files download "${FILE_ID}" --destination "${DOWNLOAD_DIR}"
 
-          echo "Extracting \"${FILENAME}\"..."
-          # Extract and find the top-level directory created
-          # Try to extract as a tar archive, letting tar auto-detect compression
-          EXTRACTED_DIR=$(tar -tf "${DOWNLOAD_DIR}/${FILENAME}" 2>/dev/null | head -1 | cut -f1 -d"/")
-          tar -xf "${DOWNLOAD_DIR}/${FILENAME}" -C "${DOWNLOAD_DIR}"
+          echo "Extracting ${FILE_NAME} to ${DOWNLOAD_DIR}..."
+          mkdir -p "${UNCOMPRESS_FOLDER_PATH}"
+          tar -xf "${COMPRESSED_FILE_PATH}" -C "${UNCOMPRESS_FOLDER_PATH}"
+          echo "Game \"${GAME_NAME}\" full path: ${UNCOMPRESS_FOLDER_PATH}"
 
-          EXTRACTED_FOLDERS+=("${DOWNLOAD_DIR}/${EXTRACTED_DIR}")
+          EXTRACTED_FOLDERS+=("${UNCOMPRESS_FOLDER_PATH}")
+          echo "EXTRACTED_FOLDERS: ${EXTRACTED_FOLDERS}"
         done
 
         echo "extracted_folder=${EXTRACTED_FOLDERS[*]}" >> ${GITHUB_OUTPUT}
@@ -103,9 +111,32 @@ jobs:
       working-directory: ${{ env.REPO_FOLDER }}
       run: |
         extract_folder='${{ steps.download_and_extract.outputs.extracted_folder }}'
-        for folder in ${extract_folder}
+        # echo -e "${{ steps.download_and_extract.outputs.extracted_folder }}"
+        # echo -e "${extract_folder}"
+        for folder in "${extract_folder[@]}"
         do
           game_name=$(basename "${folder}")
-          echo "Processing game ${game_name}..."
-          python run.py --dataFolder ${folder} --outputFolder "${{ runner.workspace }}/extract_data" --title ${game_name}
+          game_name="${game_name%.tar.gz}"
+          echo "Processing game \"${game_name}\"..."
+          python run.py --dataFolder "${folder}" --outputFolder "${{ runner.workspace }}/extract_data" --title "${game_name}"
         done
+
+    - name: Package extracted data
+      working-directory: ${{ runner.workspace }}/extract_data
+      run: |
+        # Make sure there are directories to zip
+        if ls -d */ > /dev/null 2>&1; then
+          for dir in */; do
+            dirname="${dir%/}"
+            echo "Zipping ${dirname}..."
+            zip -r "${dirname}.zip" "${dirname}"
+          done
+        else
+          echo "No directories found to zip."
+        fi
+
+    - name: Create Release and Upload Assets
+      uses: softprops/action-gh-release@v1
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        files: ${{ runner.workspace }}/extract_data/*.zip

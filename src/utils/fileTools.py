@@ -73,9 +73,7 @@ def getAllFilesFromFolder(folderPath: str) -> list[str]:
 
 def getFilesInFolderByType(folderPath: str, fileExt: str) -> list[str]:
     fileList = getAllFilesFromFolder(folderPath)
-    fileList = [
-        file for file in fileList if isFile(file) and getFileExt(file) == fileExt
-    ]
+    fileList = [file for file in fileList if isFile(file) and getFileExt(file) == fileExt]
     fileList = [os.path.join(folderPath, file) for file in fileList]
 
     return fileList

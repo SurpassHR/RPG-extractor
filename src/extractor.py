@@ -33,6 +33,10 @@ class Extractor:
     # 推断目标文件拓展名
     def _inferFileExt(self):
         fileList = getAllFilesFromFolder(self.dataFolder)
+        if fileList == []:
+            loggerPrint(msg=f"Data folder [{self.dataFolder}] contains no file!", level=LogLevels.CRITICAL)
+            exit(-1)
+
         fileExtNum: dict[str, int] = {}
         if len(fileList) != 0:
             for file in fileList:
