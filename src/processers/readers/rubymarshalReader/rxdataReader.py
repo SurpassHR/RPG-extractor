@@ -45,7 +45,8 @@ class RxdataReader(ReaderBase):
         return ret
 
     def _readDoodasRxdata(self, filePath: str):
-        f = open(filePath, "rb", encoding="utf-8")
+        # binary mode doesn't take an encoding argument
+        f = open(filePath, "rb")
         return f.read().decode()
 
     def _readOutAndSave(self, filePath: str):
@@ -58,7 +59,8 @@ class RxdataReader(ReaderBase):
             self.commonRxdata.extend(self._readCommonRxdata(filePath))
 
     def _load(self, filePath: str):
-        fd = open(filePath, "rb", encoding="utf-8")
+        # binary mode doesn't take an encoding argument
+        fd = open(filePath, "rb")
         if fd.read(1) != b"\x04":
             raise ValueError(r"Expected token \x04")
         if fd.read(1) != b"\x08":
