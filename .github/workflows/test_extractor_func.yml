@@ -81,9 +81,6 @@ jobs:
         EXTRACTED_FOLDERS=()
         DOWNLOAD_DIR="${{ runner.workspace }}/gdrive_data"
 
-        ls /home/runner/work/RPG-extractor/gdrive_data
-        # ls /home/runner/work/RPG-extractor/gdrive_data/Curse\ of\ pleasure\ v0.9
-
         for item in "${FILE_INFO[@]}"
         do
           FILE_ID="${item%%:*}"
@@ -143,8 +140,73 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
         files: ${{ runner.workspace }}/extract_data/*.zip
 
-    - name: Upload extracted data as artifact
-      uses: actions/upload-artifact@v4 # Using the latest recommended version
+    - name: Install Node.js dependencies for artifact upload
+      # 在运行 github-script 之前安装所需的 Node.js 模块。
+      # @actions/artifact 模块需要被显式安装才能在 github-script 中使用。
+      run: npm install @actions/artifact
+
+    - name: Upload each extracted zip file as a separate artifact
+      # 此步骤旨在将 'extract_data' 目录中的每个 .zip 文件作为独立的 Artifact 上传。
+      # 原生的 actions/upload-artifact@v4 在给定通配符路径时，
+      # 会将所有匹配的文件打包成一个 Artifact。
+      # 为了实现“每个文件单独上传”的需求，我们使用 actions/github-script
+      # 来执行一个 Node.js 脚本，该脚本会遍历所有 .zip 文件并逐一上传。
+      uses: actions/github-script@v6 # 使用 actions/github-script 来执行自定义逻辑
       with:
-        name: extracted-zip-files # The name of the artifact. This should be unique per workflow run if you upload multiple artifacts.
-        path: ${{ runner.workspace }}/extract_data/*.zip # The path to the files or directories to upload. Wildcards are supported.
+        script: |
+          const fs = require('fs');
+          const path = require('path');
+          // const glob = require('glob'); // 用于查找文件，github-script 环境中通常可用
+          const { globSync } = require('glob');
+
+          // 获取 GitHub Actions 工具包的客户端，用于上传 Artifact
+          const {DefaultArtifactClient} = require('@actions/artifact')
+          // const core = require('@actions/core'); // 用于日志输出和错误处理
+
+          // 获取工作区路径
+          const workspace = process.env.GITHUB_WORKSPACE;
+          // 构建包含 .zip 文件的目录的完整路径
+          const extractDirPath = path.join(workspace, '..', 'extract_data');
+
+          // 检查 extract_data 目录是否存在
+          if (!fs.existsSync(extractDirPath)) {
+            core.warning(`未找到目录: ${extractDirPath}。没有 .zip 文件可供上传。`);
+            return; // 如果目录不存在，则退出
+          }
+
+          // 查找 extract_data 目录中的所有 .zip 文件
+          const zipFiles = globSync(`${extractDirPath}/*.zip`);
+
+          if (zipFiles.length === 0) {
+            core.info(`在 ${extractDirPath} 中未找到任何 .zip 文件。`);
+            return; // 如果没有找到 .zip 文件，则退出
+          }
+
+          core.info(`找到 ${zipFiles.length} 个 .zip 文件，将逐一上传。`);
+
+          // 遍历每个找到的 .zip 文件并单独上传
+          for (const filePath of zipFiles) {
+            const fileName = path.basename(filePath); // 获取文件名 (例如：my_data.zip)
+            // 为每个文件创建一个唯一的 Artifact 名称
+            // 例如：extracted-data-my_data.zip
+            const artifactName = `[extracted-data] ${fileName}`;
+
+            try {
+              core.info(`正在上传 Artifact: ${artifactName}，路径为: ${filePath}`);
+
+              // 调用 artifactClient.uploadArtifact 上传单个文件
+              const artifactClient = new DefaultArtifactClient();
+              const uploadResponse = await artifactClient.uploadArtifact(
+                artifactName,       // Artifact 的名称
+                [filePath],         // 要上传的文件路径数组 (这里只包含一个文件)
+                path.dirname(filePath), // 文件的根目录，用于在 Artifact 中保持正确的相对路径
+                {
+                  retentionDays: 5 // 可选：设置 Artifact 的保留天数，与原始注释保持一致
+                }
+              );
+              core.info(`Artifact '${artifactName}' 上传成功: ${uploadResponse.artifactName}`);
+            } catch (error) {
+              core.error(`上传 Artifact '${artifactName}' 失败: ${error.message}`);
+              core.setFailed(`上传 Artifact '${artifactName}' 失败。`);
+            }
+          }
