@@ -7,11 +7,25 @@ The structure is extensible as you can add your 'processer' to src/processers.
 
 ## Usage
 
-```shell
+### 1. Config file
+
+```bash
 bash ./init_dev_env.sh
 # edit config.json to set the game data you want to extract from
 python ./run.py
 ```
+
+### 2. Command line arguments
+
+```bash
+python ./run.py --dataFolder <path_of_folder_contains_data_file> --outputFolder <destination_the_extraction_files_will_put> --title [just_write_your_games_title]
+```
+
+> Note: Command line arguments' priority is higher than config file.
+
+### 3. GUI
+
+Under construction
 
 ## Supported game data file type
 
@@ -29,16 +43,20 @@ python ./run.py
 
 - [x] Decode Scripts.rxdata
 
-- [ ] Parse Scripts.rxdata
-
-- [ ] Recognizing illegal words and phrases
-
 - [x] Merge my another format module into this
 
-- [ ] GUI
+- [x] Command line
 
 - [x] Make reader module more extensible to support other format like json
 
 - [x] Auto guessing the main file type under the set path
 
 - [x] Support cli arguments, see `argParser.py`
+
+- [x] Github actions to generate artifacts of extraction files
+
+- [ ] GUI
+
+- [ ] Parse Scripts.rxdata
+
+- [ ] Recognizing illegal words and phrases
