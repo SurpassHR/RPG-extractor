@@ -76,12 +76,12 @@ jobs:
         do
           FILE_ID="${item%%:*}"
           FILENAME="${item#*:}"
-          echo "Downloading $FILENAME ($FILE_ID) ..."
           gdrive files download "${FILE_ID}" --destination ${{ env.DOWNLOAD_FOLDER }}
           echo "Extracting \"${FILENAME}\"..."
           # Extract and find the top-level directory created
-          EXTRACTED_DIR=$(tar -tzf "${{ env.DOWNLOAD_FOLDER }}/${FILENAME}" | head -1 | cut -f1 -d"/")
-          tar -xzf "${{ env.DOWNLOAD_FOLDER }}/${FILENAME}" -C "${{ env.DOWNLOAD_FOLDER }}"
+          # Try to extract as a tar archive, letting tar auto-detect compression
+          EXTRACTED_DIR=$(tar -tf "${{ env.DOWNLOAD_FOLDER }}/${FILENAME}" | head -1 | cut -f1 -d"/")
+          tar -xf "${{ env.DOWNLOAD_FOLDER }}/${FILENAME}" -C "${{ env.DOWNLOAD_FOLDER }}"
           EXTRACTED_FOLDERS+=("${{ env.DOWNLOAD_FOLDER }}/${EXTRACTED_DIR}")
         done
         # For now, we only pass the first extracted folder.
@@ -94,8 +94,4 @@ jobs:
         # init server environment
         bash init_dev_cli_env.sh
         # test
-        data_folders=${{ steps.download_and_extract.outputs.extracted_folder }}
-        for folder in "${data_folders[@]}"
-        do
-          python run.py --dataFolder ${folder} --outputFolder ${{ env.OUTPUT_FOLDER }}
-        done
+        python run.py --dataFolder "${{ steps.download_and_extract.outputs.extracted_folder }}" --outputFolder "${{ env.OUTPUT_FOLDER }}"
