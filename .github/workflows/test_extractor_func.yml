@@ -6,7 +6,11 @@ on:
     branches: [master]
 
 env:
+  # slice repo name from repo full path
+  REPO_NAME: "$(echo ${{ github.repository }} | cut -d'/' -f2)"
+  REPO_FOLDER: "${REPO_NAME}/${REPO_NAME}"
   DOWNLOAD_FOLDER: "gdrive_data"
+  OUTPUT_FOLDER: "extract_data"
 
 jobs:
   download_from_gdrive:
@@ -17,12 +21,14 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Install gdrive tool
+      working-directory: ./
       run: |
         curl -L -o gdrive.tar.gz https://github.com/glotlabs/gdrive/releases/download/3.9.1/gdrive_linux-x64.tar.gz
         tar -xzf gdrive.tar.gz
         sudo install gdrive /usr/local/bin/gdrive
 
     - name: Setup service account credentials
+      working-directory: ./
       run: |
         dirName=${{ secrets.GDRIVE_SERVICE_ACCOUNT_NAME }}
         mkdir ${dirName}
@@ -32,11 +38,15 @@ jobs:
         rm -rf ${dirName}
 
     - name: Authenticate with Google Drive
+      working-directory: ./
       run: |
         gdrive account import ./gdrive_export.tar
 
-    - name: Make download folder
-      run: mkdir ${{ env.DOWNLOAD_FOLDER }}
+    - name: Create folders
+      working-directory: ./
+      run: |
+        mkdir ${{ env.DOWNLOAD_FOLDER }}
+        mkdir ${{ env.OUTPUT_FOLDER }}
 
     # - name: Download files list
     #   run: |
@@ -55,10 +65,37 @@ jobs:
 
     # Download compressed data and extract
     - name: Download file from Google Drive
+      id: download_and_extract
+      working-directory: ./
       run: |
-        FILE_ID="14WIwqL2D0HfRA49lf_Q6VzMniS9Q14Kr" # "Curse of pleasure v0.9.tar.gz"
-        gdrive files download ${FILE_ID} --destination ${{ env.DOWNLOAD_FOLDER }}
+        FILE_INFO=(
+          "14WIwqL2D0HfRA49lf_Q6VzMniS9Q14Kr:Curse of pleasure v0.9.tar.gz"
+        )
+        EXTRACTED_FOLDERS=()
+        for item in "${FILE_INFO[@]}"
+        do
+          FILE_ID="${item%%:*}"
+          FILENAME="${item#*:}"
+          echo "Downloading $FILENAME ($FILE_ID) ..."
+          gdrive files download "${FILE_ID}" --destination ${{ env.DOWNLOAD_FOLDER }}
+          echo "Extracting \"${FILENAME}\"..."
+          # Extract and find the top-level directory created
+          EXTRACTED_DIR=$(tar -tzf "${{ env.DOWNLOAD_FOLDER }}/${FILENAME}" | head -1 | cut -f1 -d"/")
+          tar -xzf "${{ env.DOWNLOAD_FOLDER }}/${FILENAME}" -C "${{ env.DOWNLOAD_FOLDER }}"
+          EXTRACTED_FOLDERS+=("${{ env.DOWNLOAD_FOLDER }}/${EXTRACTED_DIR}")
+        done
+        # For now, we only pass the first extracted folder.
+        # If multiple folders need to be handled, the logic in the next step should be updated.
+        echo "::set-output name=extracted_folder::${EXTRACTED_FOLDERS[0]}"
 
     - name: Run test
+      working-directory: ${{ env.REPO_FOLDER }}
       run: |
-        echo -e "Enter run test."
+        # init server environment
+        bash init_dev_cli_env.sh
+        # test
+        data_folders=${{ steps.download_and_extract.outputs.extracted_folder }}
+        for folder in "${data_folders[@]}"
+        do
+          python run.py --dataFolder ${folder} --outputFolder ${{ env.OUTPUT_FOLDER }}
+        done
