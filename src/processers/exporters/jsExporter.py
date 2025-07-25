@@ -9,5 +9,9 @@ class JsExporter(ExporterBase):
         super().__init__(exportFolder=exportFolder, title=title)
 
     def export(self, data: list) -> None:
-        path = os.path.join(self.exportFolder, "jsExport", f"{getCurrTimeInFmt('%y-%m-%d_%H-%M')}.json")
+        path = os.path.join(
+            self.exportFolder,
+            "jsExport" if self.title == "" else self.title,
+            f"{getCurrTimeInFmt('%y-%m-%d_%H-%M')}.json",
+        )
         self._exportListToJson(data, path)

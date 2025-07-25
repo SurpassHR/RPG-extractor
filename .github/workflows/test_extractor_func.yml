@@ -6,7 +6,6 @@ on:
     branches: [master]
 
 env:
-  # slice repo name from repo full path
   REPO_NAME: "$(echo ${{ github.repository }} | cut -d'/' -f2)"
   REPO_FOLDER: "${{ github.workspace }}"
 
@@ -55,15 +54,6 @@ jobs:
         mkdir -p ${{ runner.workspace }}/gdrive_data
         mkdir -p ${{ runner.workspace }}/extract_data
 
-    # - name: Download files list
-    #   run: |
-    #     FILE_IDS=()
-    #     for FILE_ID in "${FILE_IDS[@]}"
-    #     do
-    #       echo "Downloading $FILE_ID ..."
-    #       gdrive files download "$FILE_ID" --destination ${{ env.DOWNLOAD_FOLDER }}
-    #     done
-
     # Download folder
     # - name: Download folder from Google Drive
     #   run: |
@@ -76,7 +66,8 @@ jobs:
       working-directory: ./
       run: |
         FILE_INFO=(
-          "14WIwqL2D0HfRA49lf_Q6VzMniS9Q14Kr:Curse of pleasure v0.9.tar.gz"
+          "14WIwqL2D0HfRA49lf_Q6VzMniS9Q14Kr:Curse of Pleasure v0.9.tar.gz"
+          "1NVf26xul3TQWS_RJoahODspjuvBLZPgl:Slice of Venture Remake v0.35.tar.gz"
         )
         EXTRACTED_FOLDERS=()
         DOWNLOAD_DIR="${{ runner.workspace }}/gdrive_data"
@@ -99,24 +90,28 @@ jobs:
           echo "Game \"${GAME_NAME}\" full path: ${UNCOMPRESS_FOLDER_PATH}"
 
           EXTRACTED_FOLDERS+=("${UNCOMPRESS_FOLDER_PATH}")
-          echo "EXTRACTED_FOLDERS: ${EXTRACTED_FOLDERS}"
+          echo "EXTRACTED_FOLDERS: ${EXTRACTED_FOLDERS[@]}"
         done
 
-        echo "extracted_folder=${EXTRACTED_FOLDERS[*]}" >> ${GITHUB_OUTPUT}
+        {
+          echo "extracted_folder<<EOF"
+          printf "%s\n" "${EXTRACTED_FOLDERS[@]}"
+          echo "EOF"
+        } >> "${GITHUB_OUTPUT}"
 
     - name: Run test
       working-directory: ${{ env.REPO_FOLDER }}
       run: |
         extract_folder='${{ steps.download_and_extract.outputs.extracted_folder }}'
-        # echo -e "${{ steps.download_and_extract.outputs.extracted_folder }}"
-        # echo -e "${extract_folder}"
-        for folder in "${extract_folder[@]}"
-        do
+        while IFS= read -r folder; do
+          if [ -z "${folder}" ]; then
+            continue
+          fi
           game_name=$(basename "${folder}")
           game_name="${game_name%.tar.gz}"
           echo "Processing game \"${game_name}\"..."
           python run.py --dataFolder "${folder}" --outputFolder "${{ runner.workspace }}/extract_data" --title "${game_name}"
-        done
+        done <<< "$extract_folder"
 
     - name: Package extracted data
       working-directory: ${{ runner.workspace }}/extract_data
@@ -156,12 +151,10 @@ jobs:
         script: |
           const fs = require('fs');
           const path = require('path');
-          // const glob = require('glob'); // 用于查找文件，github-script 环境中通常可用
           const { globSync } = require('glob');
 
           // 获取 GitHub Actions 工具包的客户端，用于上传 Artifact
           const {DefaultArtifactClient} = require('@actions/artifact')
-          // const core = require('@actions/core'); // 用于日志输出和错误处理
 
           // 获取工作区路径
           const workspace = process.env.GITHUB_WORKSPACE;
