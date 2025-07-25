@@ -1,4 +1,6 @@
-# RGSS-rxdata-extractor
+<div align="center">
+    <img src="assets/banner.jpg" width=600px>
+</div>
 
 ## Description
 
