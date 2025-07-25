@@ -10,7 +10,7 @@ The structure is extensible as you can add your 'processer' to src/processers.
 ### 1. Config file
 
 ```bash
-bash ./init_dev_env.sh
+bash ./init_dev_env.sh # prepare environment for script to run
 # edit config.json to set the game data you want to extract from
 python ./run.py
 ```
@@ -18,8 +18,7 @@ python ./run.py
 ### 2. Command line arguments
 
 ```bash
-bash ./init_dev_env.sh
-
+bash ./init_dev_env.sh # prepare environment for script to run
 python ./run.py --dataFolder <path_of_folder_contains_data_file> --outputFolder <destination_the_extraction_files_will_put> --title [just_write_your_games_title]
 ```
 
@@ -28,6 +27,12 @@ python ./run.py --dataFolder <path_of_folder_contains_data_file> --outputFolder 
 ### 3. GUI
 
 Under construction
+
+## Get process result online
+
+Go to `Actions - Test extractor function`, click latest workflow and get extraction file.
+
+![github_actions_workflow_artifacts](assets/github_actions_workflow_artifacts.png)
 
 ## Supported game data file type
 
