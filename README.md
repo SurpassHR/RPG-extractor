@@ -18,6 +18,8 @@ python ./run.py
 ### 2. Command line arguments
 
 ```bash
+bash ./init_dev_env.sh
+
 python ./run.py --dataFolder <path_of_folder_contains_data_file> --outputFolder <destination_the_extraction_files_will_put> --title [just_write_your_games_title]
 ```
 
