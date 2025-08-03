@@ -23,18 +23,14 @@ class JsReader(ReaderBase):
                 break
 
         if not isFileExists(targetFile):
-            loggerPrint(
-                f"Target file '{targetFile}' not in list.", level=LogLevels.WARNING
-            )
+            loggerPrint(f"Target file '{targetFile}' not in list.", level=LogLevels.WARNING)
             exit(-1)
 
         fd = open(targetFile, "r", encoding="utf-8")
 
         if fd:
             data = fd.read()
-            debugFile = (
-                f"output/reader/js/{getCurrTimeInFmt('%y-%m-%d_%H-%M')}/rawPlugins.js"
-            )
+            debugFile = f"output/reader/js/{getCurrTimeInFmt('%y-%m-%d_%H-%M')}/rawPlugins.js"
             if os.path.exists(debugFile):
                 os.remove(debugFile)
             if not os.path.exists(os.path.dirname(debugFile)):

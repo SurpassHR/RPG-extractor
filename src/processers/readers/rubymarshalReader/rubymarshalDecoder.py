@@ -1,13 +1,5 @@
 import re
-from rubymarshal.classes import (
-    RubyObject,
-    RubyString,
-    Symbol,
-    UsrMarshal,
-    UserDef,
-    Module,
-    Extended
-)
+from rubymarshal.classes import RubyObject, RubyString, Symbol, UsrMarshal, UserDef, Module, Extended
 from rubymarshal.constants import (
     TYPE_ARRAY,
     TYPE_BIGNUM,
@@ -33,6 +25,7 @@ from rubymarshal.constants import (
     TYPE_USRMARSHAL,
 )
 from rubymarshal.reader import Reader as Decoder
+
 
 class RubyMarshalDecoder(Decoder):
     def __init__(self, fd, registry=None):
@@ -135,18 +128,14 @@ class RubyMarshalDecoder(Decoder):
             link_id = self.read_long()
             if link_id > len(self.objects):
                 raise ValueError(
-                    "invalid link destination: %d should be lower than %d or equal."
-                    % (link_id, len(self.objects))
+                    "invalid link destination: %d should be lower than %d or equal." % (link_id, len(self.objects))
                 )
             # According to the documentation, objects are counted from 1.
             # But it looks like they did not take the outermost object into account.
             result = self.objects[link_id]
             if result is None:
                 # link to incomplete object
-                raise ValueError(
-                    "invalid link destination: Object id %d is not yet unmarshaled."
-                    % (link_id)
-                )
+                raise ValueError("invalid link destination: Object id %d is not yet unmarshaled." % (link_id))
         elif token == TYPE_USERDEF:
             class_symbol = self.read()
             private_data = self.read_blob()
@@ -156,8 +145,7 @@ class RubyMarshalDecoder(Decoder):
             python_class = self.registry.get(class_name, UserDef)
             if not issubclass(python_class, UserDef):
                 raise ValueError(
-                    "invalid class mapping for %r: %r should be a subclass of %r."
-                    % (class_name, python_class, UserDef)
+                    "invalid class mapping for %r: %r should be a subclass of %r." % (class_name, python_class, UserDef)
                 )
             result = python_class(class_name)
             # noinspection PyProtectedMember
@@ -201,20 +189,20 @@ class RubyMarshalDecoder(Decoder):
             if token in (TYPE_STRING, TYPE_REGEXP):
                 encoding = self._get_encoding(attributes)
                 try:
-                    result = result.decode(encoding) # type: ignore
+                    result = result.decode(encoding)  # type: ignore
                 except UnicodeDecodeError:
                     try:
-                        result = result.decode("latin_1") # type: ignore
-                    except:
-                        result = result.decode("unicode-escape") # type: ignore
+                        result = result.decode("latin_1")  # type: ignore
+                    except Exception as _:
+                        result = result.decode("unicode-escape")  # type: ignore
                 # string instance attributes are discarded (on regex?)
                 if attributes and token == TYPE_STRING:
                     result = RubyString(result, attributes)
             elif attributes:
-                result.set_attributes(attributes) # type: ignore
+                result.set_attributes(attributes)  # type: ignore
 
         if token == TYPE_REGEXP:
-            result = re.compile(str(result), re_flags) # type: ignore
+            result = re.compile(str(result), re_flags)  # type: ignore
 
         if object_index is not None:
             self.objects[object_index] = result

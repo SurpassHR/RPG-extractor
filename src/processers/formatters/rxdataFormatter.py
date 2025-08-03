@@ -9,6 +9,7 @@ from src.utils.timeTools import getCurrTimeInFmt
 from src.utils.decorators.execTimer import timer
 from src.utils.regexTools import execMultiReSub
 
+
 class RxdataFormatter(FormatterBase):
     def __init__(self):
         super().__init__()
@@ -18,8 +19,8 @@ class RxdataFormatter(FormatterBase):
 
     def _rmAllEscapes(self, dataList: list[str]) -> list[str]:
         patternDict: dict[re.Pattern[str], str] = {
-            re.compile(r'\\[a-zA-Z]\[\d+\]'): '\n',
-            re.compile(r'\n{2,}'): '\n',
+            re.compile(r"\\[a-zA-Z]\[\d+\]"): "\n",
+            re.compile(r"\n{2,}"): "\n",
         }
 
         subbedDataList: list[str] = []
@@ -33,8 +34,8 @@ class RxdataFormatter(FormatterBase):
                     continue
                 else:
                     subbedDataList.append(execMultiReSub(patternDict, item))
-            except:
-                loggerPrint(f"{item}, {type(item)}", level=LogLevels.WARNING)
+            except Exception as e:
+                loggerPrint(f"{item}, {type(item)}, {e}", level=LogLevels.WARNING)
 
         return subbedDataList
 
@@ -50,7 +51,7 @@ class RxdataFormatter(FormatterBase):
         resList.extend(dedupedSentenceList)
         resList.extend(dedupedOpntionList)
 
-        filePath = f"output/formatter/rxdata/{getCurrTimeInFmt("%y-%m-%d_%H-%M")}"
+        filePath = f"output/formatter/rxdata/{getCurrTimeInFmt('%y-%m-%d_%H-%M')}"
         fileName = filePath + "/allTextContent"
         self._exportListToJson(resList, f"{fileName}.json")
 

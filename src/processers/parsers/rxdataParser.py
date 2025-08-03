@@ -1,12 +1,12 @@
 from rubymarshal.classes import RubyObject
 
 from src.publicDef.readerDefs import RubyObjAttrCode
-from src.loggers.simpleLogger import loggerPrintList
 from src.processers.parsers.parserBase import ParserBase
 from src.utils.dataStructTools import getAtomObjFromRubyObj, listDedup, traverseListBytesDecode
 from src.utils.fileTools import writeListToFile, writeListToRubyFile
 from src.utils.timeTools import getCurrTimeInFmt
 from src.utils.decorators.execTimer import timer
+
 
 class RxdataParser(ParserBase):
     def __init__(self):
@@ -30,18 +30,18 @@ class RxdataParser(ParserBase):
         optionList = []
         for item in rubyObjList:
             attrs = item.attributes
-            code = attrs.get('@code')
-            content: list = attrs.get('@parameters', [])
+            code = attrs.get("@code")
+            content: list = attrs.get("@parameters", [])
             if code:
                 # 需要两者合并来展示完整对话
                 if code == RubyObjAttrCode.TEXT_DISP or code == RubyObjAttrCode.TITLE:
-                    dialogue = content[0].decode('utf-8') if isinstance(content[0], bytes) else content[0]
+                    dialogue = content[0].decode("utf-8") if isinstance(content[0], bytes) else content[0]
                     dialogueList.append(dialogue)
                 elif code == RubyObjAttrCode.TEXT_DISP:
-                    textDisp = content[0].decode('utf-8') if isinstance(content[0], bytes) else content[0]
+                    textDisp = content[0].decode("utf-8") if isinstance(content[0], bytes) else content[0]
                     textDispList.append(textDisp)
                 elif code == RubyObjAttrCode.TITLE:
-                    title = content[0].decode('utf-8') if isinstance(content[0], bytes) else content[0]
+                    title = content[0].decode("utf-8") if isinstance(content[0], bytes) else content[0]
                     titleList.append(title)
                 elif code == RubyObjAttrCode.OPTION:
                     option = content[0]
@@ -54,8 +54,8 @@ class RxdataParser(ParserBase):
     @timer
     def parse(self, data: tuple[list, dict, list]) -> tuple[list, list]:
         scriptsRxdata, doodadsRxdata, commonRxdata = data
-        filePath = f"output/parser/rxdata/{getCurrTimeInFmt("%y-%m-%d_%H-%M")}"
-        writeListToRubyFile(list(scriptsRxdata), f'{filePath}/scriptsRxdata.rb')
-        writeListToRubyFile([doodadsRxdata], f'{filePath}/doodadsRxdata.rb')
+        filePath = f"output/parser/rxdata/{getCurrTimeInFmt('%y-%m-%d_%H-%M')}"
+        writeListToRubyFile(list(scriptsRxdata), f"{filePath}/scriptsRxdata.rb")
+        writeListToRubyFile([doodadsRxdata], f"{filePath}/doodadsRxdata.rb")
         rubyObjList = self._parseToGetAtomRubyObj(commonRxdata, f"{filePath}/atomRubyObjs.txt")
         return self._parseToGetDialogueFromRubyObjs(rubyObjList)

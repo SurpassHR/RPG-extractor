@@ -7,18 +7,19 @@ from src.utils.timeTools import getCurrTimeInFmt
 from src.utils.decorators.execTimer import timer
 from src.utils.dataStructTools import getAtomObjFromObj
 
+
 class JsParser(ParserBase):
     def __init__(self):
         super().__init__()
 
     def _getTargetFileKeyContent(self, data: str) -> str:
         if not data:
-            return ''
+            return ""
 
-        pattern = re.compile(r"var \$plugins =\n*(\[.*\])", flags=re.DOTALL) # re.S 包含回车换行
+        pattern = re.compile(r"var \$plugins =\n*(\[.*\])", flags=re.DOTALL)  # re.S 包含回车换行
         res = re.findall(pattern, data)
         if not res or len(res) == 0:
-            return ''
+            return ""
 
         return res[0]
 
@@ -53,32 +54,24 @@ class JsParser(ParserBase):
         res = self._getTargetFileKeyContent(data)
 
         resList = json.loads(res)
-        dumpListToFile(
-            resList,
-            f"output/parser/js/{getCurrTimeInFmt('%y-%m-%d_%H-%M')}/pluginList.json"
-        )
+        dumpListToFile(resList, f"output/parser/js/{getCurrTimeInFmt('%y-%m-%d_%H-%M')}/pluginList.json")
 
         resList = getAtomObjFromObj(resList)
-        dumpListToFile(
-            resList,
-            f"output/parser/js/{getCurrTimeInFmt('%y-%m-%d_%H-%M')}/pluginList_parseAtomObj.json"
-        )
+        dumpListToFile(resList, f"output/parser/js/{getCurrTimeInFmt('%y-%m-%d_%H-%M')}/pluginList_parseAtomObj.json")
 
         newList = []
         for item in resList:
-            if isinstance(item, str) and (item[0] == '{' or item[0] == '['):
+            if isinstance(item, str) and (item[0] == "{" or item[0] == "["):
                 newList.append(self._deepParse(item))
             else:
                 newList.append(item)
         dumpListToFile(
-            newList,
-            f"output/parser/js/{getCurrTimeInFmt('%y-%m-%d_%H-%M')}/pluginList_parseClusterData.json"
+            newList, f"output/parser/js/{getCurrTimeInFmt('%y-%m-%d_%H-%M')}/pluginList_parseClusterData.json"
         )
 
         resList = getAtomObjFromObj(newList)
         dumpListToFile(
-            resList,
-            f"output/parser/js/{getCurrTimeInFmt('%y-%m-%d_%H-%M')}/pluginList_parseAtomClusterData.json"
+            resList, f"output/parser/js/{getCurrTimeInFmt('%y-%m-%d_%H-%M')}/pluginList_parseAtomClusterData.json"
         )
 
         return resList

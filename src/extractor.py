@@ -12,6 +12,7 @@ from src.processers.readers import ReaderBase
 from src.processers.parsers import ParserBase
 from src.processers.formatters import FormatterBase
 from src.processers.exporters import ExporterBase
+from src.processers.injecters import InjecterBase
 
 
 class Extractor:
@@ -27,6 +28,7 @@ class Extractor:
         self.parser: ParserBase
         self.formatter: FormatterBase
         self.exporter: ExporterBase
+        self.injecter: InjecterBase
 
         self._init()
 
@@ -97,6 +99,17 @@ class Extractor:
         else:
             loggerPrint(
                 f"Procsr '{boldFont(f'{self.targetFileExt}Exporter')}' not found.",
+                level=LogLevels.CRITICAL,
+            )
+            exit(-1)
+
+        injecterCls = self.classManager.getInjecter(fileExt)
+        if injecterCls:
+            self.injecterCls = injecterCls(self.outputFolder, self.title)
+            loggerPrint(f"Use Injecter {boldFont(f'{self.injecterCls.__class__.__name__}')}")
+        else:
+            loggerPrint(
+                f"Procsr '{boldFont(f'{self.targetFileExt}Injecter')}' not found.",
                 level=LogLevels.CRITICAL,
             )
             exit(-1)

@@ -78,9 +78,7 @@ class RxdataReader(ReaderBase):
                 loggerPrint(f"Error reading file {file}: {e}", level=LogLevels.ERROR)
                 continue
 
-        outputBaseFolder = os.path.join(
-            "output", "reader", "rxdata", getCurrTimeInFmt("%y-%m-%d_%H-%M")
-        )
+        outputBaseFolder = os.path.join("output", "reader", "rxdata", getCurrTimeInFmt("%y-%m-%d_%H-%M"))
         for fileData in self.commonRxdata:
             atomObjList: list[RubyObject] = getAtomObjFromRubyObj(fileData)
             atomObjList = listDedup(atomObjList)

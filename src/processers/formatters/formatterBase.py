@@ -4,10 +4,11 @@ from typing import Any
 from src.utils.autoRegister import AutoRegisterBase
 from src.utils.fileTools import FileTool
 
+
 class FormatterBase(AutoRegisterBase, FileTool):
     def __init__(self):
-        self.lineEnd = ['.', '?', '!', '"', "'", ')', '\\']
-        self.wordLineEnd = ['the', 'with', 'to']
+        self.lineEnd = [".", "?", "!", '"', "'", ")", "\\"]
+        self.wordLineEnd = ["the", "with", "to"]
 
     def init(self):
         pass
@@ -20,7 +21,7 @@ class FormatterBase(AutoRegisterBase, FileTool):
         while i < lineCount:
             currentLine = lines[i]
             # 检查当前行是否以换行符结尾
-            isOverbound = (i >= (lineCount - 1))
+            isOverbound = i >= (lineCount - 1)
             if not isOverbound and self._shouldMergeWithNextLine(currentLine, lines[i + 1]):
                 # 开始构建合并行
                 mergedLine = currentLine.rstrip()
@@ -31,7 +32,7 @@ class FormatterBase(AutoRegisterBase, FileTool):
                     if not self._shouldMergeWithNextLine(mergedLine, nextLine):
                         break
                     # 合并上下两行
-                    mergedLine += ' \n' + nextLine.strip()
+                    mergedLine += " \n" + nextLine.strip()
                     i += 1
                 restoredLines.append(mergedLine)
             else:
@@ -68,7 +69,7 @@ class FormatterBase(AutoRegisterBase, FileTool):
 
     def _isStringValidWord(self, string: str):
         # 如果本身不是一个单词而是句子，则不能按照单词的标准判断
-        if ' ' in string:
+        if " " in string:
             return True
         # 如果有英文字母之外的字符，则不能按照单词的标准判断
         if not string.isalpha():
