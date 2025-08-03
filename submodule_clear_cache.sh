@@ -5,5 +5,6 @@ fi
 
 git config --file .gitmodules --get-regexp 'submodule\..*\.path' | while read key path; do
     mod_name=$(echo $key | sed 's/submodule\.\(.*\)\.path/\1/')
+    echo -e "Clearing cache for submodule: $mod_name"
     rm -rf ".git/modules/$mod_name"
 done

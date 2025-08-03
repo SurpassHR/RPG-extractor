@@ -1,3 +1,7 @@
 [submodule "gui_template"]
 	path = gui_template
 	url = https://github.com/SurpassHR/PySide6-Application-Template.git
+
+[submodule "rgsspacker"]
+	path = rgsspacker
+	url = https://github.com/SurpassHR/Ruby-rgsspacker.git
