@@ -14,6 +14,7 @@ class ArgParser:
         self.parser.add_argument("--outputFolder", type=str, help="Path to the output folder")
         self.parser.add_argument("--title", type=str, help="Title of the game")
         self.parser.add_argument("--gui", action="store_true", help="Launch the GUI application")
+        self.parser.add_argument("--format", action="store_true", help="Format data or use raw data")
 
     def parse_args(self):
         """

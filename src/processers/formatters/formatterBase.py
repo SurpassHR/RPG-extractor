@@ -1,8 +1,17 @@
 import enchant
+import re
 from typing import Any
 
 from src.utils.autoRegister import AutoRegisterBase
 from src.utils.fileTools import FileTool
+
+
+jsonPatternDict: dict[re.Pattern[str], str] = {
+    re.compile(r"\\n[cr]*<\\c\[\d{1,3}\].*\\c>"): "",
+    re.compile(r"\\\w\[\d{1,3}\]"): "\n",
+    re.compile(r"\\CR"): "\n",
+    re.compile(r"\\c"): "\n",
+}
 
 
 class FormatterBase(AutoRegisterBase, FileTool):

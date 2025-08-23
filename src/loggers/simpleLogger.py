@@ -72,9 +72,7 @@ def _printFormatted(msg, level, frame):
     resetColorStr: str = ANSIColors.COLOR_RESET.value
 
     # 时间部分固定19字符宽度
-    currTimeStr: str = (
-        ANSIColors.COLOR_BRIGHT_BLUE.value + f"{getCurrTime():19}" + resetColorStr + " "
-    )
+    currTimeStr: str = ANSIColors.COLOR_BRIGHT_BLUE.value + f"{getCurrTime():19}" + resetColorStr + " "
 
     # 文件路径部分完整显示，固定50字符宽度
     if not frame:
@@ -83,9 +81,7 @@ def _printFormatted(msg, level, frame):
     fileNameStr: str = f"{filePath}"
 
     # 日志级别固定8字符宽度
-    levelStr: str = italicFont(
-        boldFont(colorStr + f"{level.name:>8}" + " " * 4 + resetColorStr + " ")
-    )
+    levelStr: str = italicFont(boldFont(colorStr + f"{level.name:>8}" + " " * 4 + resetColorStr + " "))
 
     lineNoStr: str = str(frame.lineno)
     fileContext: str = fileNameStr + ":" + lineNoStr + " "
@@ -113,9 +109,7 @@ def loggerPrintDict(dataDict: dict) -> None:
         return
     if dataDict is not None and dataDict != {}:
         for key, value in dataDict.items():
-            loggerPrint(
-                f"{key}: {value}", frame=inspect.stack()[1], level=LogLevels.DEBUG
-            )
+            loggerPrint(f"{key}: {value}", frame=inspect.stack()[1], level=LogLevels.DEBUG)
 
 
 def _stylize(msg: str, style: ANSIStyles) -> str:

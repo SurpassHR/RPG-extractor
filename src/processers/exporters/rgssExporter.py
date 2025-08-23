@@ -5,8 +5,8 @@ from src.utils.timeTools import getCurrTimeInFmt
 
 
 class RgssExporter(ExporterBase):
-    def __init__(self, exportFolder: str, title: str = ""):
-        super().__init__(exportFolder=exportFolder, title=title)
+    def init(self, exportFolder: str, title: str = ""):
+        return super().init(exportFolder, title)
 
     def export(self, data: list) -> None:
         path = os.path.join(

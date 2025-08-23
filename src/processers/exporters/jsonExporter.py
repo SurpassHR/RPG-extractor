@@ -5,8 +5,8 @@ from src.utils.timeTools import getCurrTimeInFmt
 
 
 class JsonExporter(ExporterBase):
-    def __init__(self, exportFolder: str, title: str = ""):
-        super().__init__(exportFolder=exportFolder, title=title)
+    def init(self, exportFolder: str, title: str = ""):
+        super().init(exportFolder=exportFolder, title=title)
 
     def export(self, data: list) -> None:
         path = os.path.join(

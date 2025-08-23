@@ -1,27 +1,31 @@
 import json
-from typing import Any
 import zlib
+from typing import Any
 from rubymarshal.classes import RubyObject, RubyString, UserDef
 
-from src.loggers.simpleLogger import loggerPrint, loggerPrintList
+from src.loggers.simpleLogger import loggerPrint
+
 
 def listDedup(dataList: list) -> list:
     tempDataList = []
     [tempDataList.append(item) for item in dataList if item not in tempDataList]
     return tempDataList
 
+
 def hashableListDedup(dataList: list) -> list:
     return list(dict.fromkeys(dataList))
+
 
 def nonSeqListDedup(dataList: list) -> list:
     return list(set(dataList))
 
+
 def traverseListBytesDecode(dataList: list) -> list:
     def __decode(item) -> str:
         try:
-            item = item.decode('utf-8')
-        except:
-            item = zlib.decompress(item).decode('utf-8')
+            item = item.decode("utf-8")
+        except Exception as _:
+            item = zlib.decompress(item).decode("utf-8")
         return item
 
     retList = []
@@ -41,6 +45,7 @@ def traverseListBytesDecode(dataList: list) -> list:
             continue
 
     return retList
+
 
 def _traverseListDict(obj: Any) -> list:
     if obj == "":
@@ -76,7 +81,7 @@ def _traverseListDict(obj: Any) -> list:
 
     if isinstance(obj, str):
         try:
-            if obj[0] == '[' or obj[0] == '{':
+            if obj[0] == "[" or obj[0] == "{":
                 dataLoads = json.loads(obj)
                 loggerPrint(dataLoads)
                 if isinstance(dataLoads, list):
@@ -87,10 +92,11 @@ def _traverseListDict(obj: Any) -> list:
                     return __procDict(dataLoads)
             else:
                 return [obj]
-        except:
+        except Exception as _:
             return [obj]
 
     return retList
+
 
 def getAtomObjFromObj(fileData) -> list:
     atomObjList: list = []
@@ -102,14 +108,16 @@ def getAtomObjFromObj(fileData) -> list:
             res = _traverseListDict(item)
             atomObjList.extend(res)
         except Exception as e:
-            loggerPrint(f'Error processing obj: {e}')
+            loggerPrint(f"Error processing obj: {e}")
             continue
 
     return atomObjList
 
+
 def _hasDeeperRubyObj(obj: RubyObject):
     rubyObjAttrs = obj.attributes
-    return 'RubyObject' in str(rubyObjAttrs)
+    return "RubyObject" in str(rubyObjAttrs)
+
 
 def hasDeeperJsonObj(obj: dict | list):
     if isinstance(obj, dict):
@@ -117,6 +125,7 @@ def hasDeeperJsonObj(obj: dict | list):
     elif isinstance(obj, list):
         return any(isinstance(item, (dict, list)) for item in obj)
     return False
+
 
 def _traverseRubyObj(obj: RubyObject | Any) -> list[RubyObject]:
     if isinstance(obj, UserDef):
@@ -165,6 +174,7 @@ def _traverseRubyObj(obj: RubyObject | Any) -> list[RubyObject]:
 
     return retList
 
+
 def getAtomObjFromRubyObj(fileData) -> list[RubyObject]:
     atomObjList: list[RubyObject] = []
     if isinstance(fileData, RubyObject):
@@ -174,7 +184,7 @@ def getAtomObjFromRubyObj(fileData) -> list[RubyObject]:
         try:
             atomObjList.extend(_traverseRubyObj(rubyObj))
         except Exception as e:
-            loggerPrint(f'Error processing RubyObject: {e}')
+            loggerPrint(f"Error processing RubyObject: {e}")
             continue
 
     return atomObjList

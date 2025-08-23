@@ -1,16 +1,36 @@
 import os
 import json
+import shutil
 import threading
 
 
 def readJson(filePath: str) -> dict:
-    with open(filePath, "r", encoding="utf-8") as jsonFile:
-        jsonContent = json.load(jsonFile)
-    return jsonContent
+    """
+    desc: 读取 json 文件为 dict
+    params:
+        filePath: json 文件路径
+    returns: json 内容，若读取失败返回空字典
+    """
+    try:
+        with open(filePath, "r", encoding="utf-8") as jsonFile:
+            jsonContent = json.load(jsonFile)
+        return jsonContent
+    except Exception as _:
+        return {}
 
 
 def isFolder(path: str) -> bool:
     return os.path.isdir(path)
+
+
+def copyFolder(path: str, newPath: str) -> None:
+    """
+    desc: 复制文件夹
+    params:
+        path: 源文件夹路径
+        newPath: 目标文件夹路径
+    """
+    shutil.copytree(path, newPath)
 
 
 def isFile(path: str) -> bool:
@@ -62,19 +82,31 @@ def isFileInListValid(fileList: list[str]) -> bool:
 
 
 def getAllFilesFromFolder(folderPath: str) -> list[str]:
+    """
+    desc: 获取文件夹下的所有文件
+    params:
+        folderPath: 文件夹路径
+    returns: list 文件夹下的所有文件的绝对路径
+    """
     if not isFolderExists(folderPath):
         return []
 
     fileList = os.listdir(folderPath)
-    fileList = [os.path.join(folderPath, file) for file in fileList]
+    fileList = [os.path.abspath(os.path.join(folderPath, file)) for file in fileList]
 
     return fileList
 
 
 def getFilesInFolderByType(folderPath: str, fileExt: str) -> list[str]:
+    """
+    desc: 获取文件夹下的给出文件类型的所有文件
+    params:
+        folderPath: 文件夹路径
+    returns: list 文件夹下的给出文件类型的所有文件的绝对路径
+    """
     fileList = getAllFilesFromFolder(folderPath)
     fileList = [file for file in fileList if isFile(file) and getFileExt(file) == fileExt]
-    fileList = [os.path.join(folderPath, file) for file in fileList]
+    fileList = [os.path.abspath(os.path.join(folderPath, file)) for file in fileList]
 
     return fileList
 

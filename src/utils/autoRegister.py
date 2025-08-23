@@ -1,13 +1,21 @@
 from src.loggers.simpleLogger import boldFont, loggerPrint
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from src.processers.readers.readerBase import ReaderBase
+    from src.processers.parsers.parserBase import ParserBase
+    from src.processers.exporters.exporterBase import ExporterBase
+    from src.processers.formatters.formatterBase import FormatterBase
+    from src.processers.injecters.injecterBase import InjecterBase
 
 
 # 定义一个注册中心（管理类）
 class ClassManager:
-    _readers = {}
-    _parsers = {}
-    _exporters = {}
-    _formatters = {}
-    _injecters = {}
+    _readers: dict[str, "ReaderBase"] = {}
+    _parsers: dict[str, "ParserBase"] = {}
+    _exporters: dict[str, "ExporterBase"] = {}
+    _formatters: dict[str, "FormatterBase"] = {}
+    _injecters: dict[str, "InjecterBase"] = {}
 
     @classmethod
     def register(cls, name: str, the_class):
@@ -48,7 +56,7 @@ class ClassManager:
 
     @classmethod
     def getInjecter(cls, name):
-        return cls._injecters.get
+        return cls._injecters.get(name)
 
     @classmethod
     def listReaders(cls):
