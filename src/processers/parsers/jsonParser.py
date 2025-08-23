@@ -184,17 +184,19 @@ class JsonParser(ParserBase):
 
         # 3. 聚合和清洗数据
         raw_data_list = map_texts + item_texts + special_texts
-        
+
         # 移除所有空值或仅包含空白的字符串
         cleaned_data = [item for item in raw_data_list if isinstance(item, str) and item and not item.isspace()]
 
         # 4. (可选) 导出调试文件
-        self._dump_debug_files({
-            "dialogue_and_map_name": map_texts,
-            "items": item_texts,
-            "special": special_texts,
-            "all_raw_text": cleaned_data
-        })
+        self._dump_debug_files(
+            {
+                "dialogue_and_map_name": map_texts,
+                "items": item_texts,
+                "special": special_texts,
+                "all_raw_text": cleaned_data,
+            }
+        )
 
         return cleaned_data
 
@@ -213,7 +215,7 @@ class JsonParser(ParserBase):
         map_files = self.parseNeededFile.getMapFiles()
         if not map_files:
             return []
-            
+
         texts = []
 
         # 提取地图显示名称
@@ -221,17 +223,11 @@ class JsonParser(ParserBase):
         texts.extend(map_names)
 
         # 提取对话、选项和标题文本
-        dialogue_codes = [
-            ContentAttrCode.TEXT_DISP.value,
-            ContentAttrCode.OPTION.value,
-            ContentAttrCode.TITLE.value
-        ]
-        
+        dialogue_codes = [ContentAttrCode.TEXT_DISP.value, ContentAttrCode.OPTION.value, ContentAttrCode.TITLE.value]
+
         event_commands = []
         for code_val in dialogue_codes:
-            event_commands.extend(
-                self._traverseToFindTargetObj(data=map_files, targetK="code", targetV=code_val)
-            )
+            event_commands.extend(self._traverseToFindTargetObj(data=map_files, targetK="code", targetV=code_val))
 
         for item in event_commands:
             code = item.get("code")
@@ -276,12 +272,10 @@ class JsonParser(ParserBase):
 
         texts = []
         specialKeyList = ["name", "switches", "basic", "commands", "params", "variables"]
-        
+
         found_items = []
         for k in specialKeyList:
-            found_items.extend(
-                self._traverseToGetTargetAtomObj(data=special_files, targetK=k, targetV="*")
-            )
+            found_items.extend(self._traverseToGetTargetAtomObj(data=special_files, targetK=k, targetV="*"))
 
         for item in found_items:
             if isinstance(item, dict):
@@ -290,13 +284,15 @@ class JsonParser(ParserBase):
             # 提取扁平化的字符串列表
             elif isinstance(item, list) and not hasDeeperJsonObj(item):
                 texts.extend(filter(lambda x: isinstance(x, str), item))
-        
+
         return texts
 
     def _dump_debug_files(self, data_map: dict):
         """将提取过程中的中间数据和最终结果导出为JSON文件以供调试。"""
-        timestamp = getCurrTimeInFmt('%y-%m-%d_%H-%M')
-        output_dir = f"output/parser/json/{timestamp}"
-        
+        timestamp = getCurrTimeInFmt("%y-%m-%d_%H-%M")
+        outputDir = f"output/parser/json/{timestamp}"
+
         for name, data in data_map.items():
-            dumpListToFile(data, f"{output_dir}/{name}.json")
+            dumpListToFile(data, f"{outputDir}/{name}.json")
+
+        self._setStageDataPath(f"{outputDir}/all_raw_text.json")

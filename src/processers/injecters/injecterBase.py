@@ -1,5 +1,6 @@
 from os import path
 from typing import Union
+
 from src.loggers.simpleLogger import loggerPrint
 from src.utils.autoRegister import AutoRegisterBase
 from src.utils.fileTools import FileTool, copyFolder, readJson

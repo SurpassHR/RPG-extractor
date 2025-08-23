@@ -31,6 +31,7 @@ class JsReader(ReaderBase):
         if fd:
             data = fd.read()
             debugFile = f"output/reader/js/{getCurrTimeInFmt('%y-%m-%d_%H-%M')}/rawPlugins.js"
+            self._setStageDataPath(debugFile)
             if os.path.exists(debugFile):
                 os.remove(debugFile)
             if not os.path.exists(os.path.dirname(debugFile)):

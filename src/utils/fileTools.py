@@ -152,6 +152,9 @@ dict_file_lock = threading.Lock()
 
 
 def writeDictToJsonFile(dataDict: dict, fileName: str, firstWrite: bool = True) -> None:
+    if fileName == "":
+        return
+
     with dict_file_lock:
         if firstWrite:
             if os.path.exists(fileName):

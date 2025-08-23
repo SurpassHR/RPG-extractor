@@ -20,9 +20,8 @@ class JsonReader(ReaderBase):
             data = readJson(file)
             fileNameWithoutExt = getFileNameWithoutExt(file)
             jsonData[fileNameWithoutExt] = data
-            writeDictToJsonFile(
-                data, f"output/reader/json/{getCurrTimeInFmt('%y-%m-%d_%H-%M')}/{fileNameWithoutExt}.json"
-            )
+            self._setStageDataPath(f"output/reader/json/{getCurrTimeInFmt('%y-%m-%d_%H-%M')}/{fileNameWithoutExt}.json")
+            writeDictToJsonFile(data, self._getStageDataPath())
         loggerPrint(f"Read data type '{type(jsonData)}'")
 
         return jsonData

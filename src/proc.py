@@ -4,7 +4,7 @@ from src.publicDef.levelDefs import LogLevels
 from src.loggers.simpleLogger import loggerPrint, boldFont
 
 from src.utils.autoRegister import ClassManager
-from src.utils.fileTools import getAllFilesFromFolder, getFileExt, getFilesInFolderByType
+from src.utils.fileTools import getAllFilesFromFolder, getFileExt, getFilesInFolderByType, readJson
 from src.utils.decorators.execTimer import timer
 
 from src.processers.readers import ReaderBase
@@ -39,7 +39,6 @@ class Proc:
         self.fileList: list[str] = []
         self.targetFileExt: str = ""
         self.execFormat: bool = format
-        self.extractData: str | dict[str, str] = {}
 
         # 处理模式
         self.mode: Proc.ProcMode = self.ProcMode.Extract
@@ -140,9 +139,10 @@ class Proc:
     def extract(self):
         readData = self.reader.read()
         parseData = self.parser.parse(readData)
-        self.extractData = self.formatter.format(parseData) if self.execFormat else parseData
-        self.exporter.export(self.extractData)
+        extractData = self.formatter.format(parseData) if self.execFormat else parseData
+        self.exporter.export(extractData)
 
     @timer
-    def inject(self):
-        self.injecter.inject(self.extractData)
+    def inject(self, jsonPath: str):
+        translateData: dict[str, str] = readJson(jsonPath)
+        self.injecter.inject(translateData)

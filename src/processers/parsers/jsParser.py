@@ -51,27 +51,46 @@ class JsParser(ParserBase):
 
     @timer
     def parse(self, data: str) -> list:
-        res = self._getTargetFileKeyContent(data)
+        """
+        从原始JS文件中解析插件列表。
 
-        resList = json.loads(res)
-        dumpListToFile(resList, f"output/parser/js/{getCurrTimeInFmt('%y-%m-%d_%H-%M')}/pluginList.json")
+        Args:
+            data: 包含插件列表的JS文件内容。
 
-        resList = getAtomObjFromObj(resList)
-        dumpListToFile(resList, f"output/parser/js/{getCurrTimeInFmt('%y-%m-%d_%H-%M')}/pluginList_parseAtomObj.json")
+        Returns:
+            解析和处理后的插件列表。
+        """
+        target_content = self._getTargetFileKeyContent(data)
+        if not target_content:
+            # 在未找到目标内容时返回空列表，而不是引发错误
+            return []
 
-        newList = []
-        for item in resList:
-            if isinstance(item, str) and (item[0] == "{" or item[0] == "["):
-                newList.append(self._deepParse(item))
+        try:
+            plugin_list = json.loads(target_content)
+        except json.JSONDecodeError:
+            # 处理无效的JSON数据
+            # 可以在此处添加日志记录
+            return []
+
+        # 移除调试文件转储，以提高清晰度和性能
+        dumpListToFile(plugin_list, f"output/parser/js/{getCurrTimeInFmt('%y-%m-%d_%H-%M')}/pluginList.json")
+
+        # 将处理步骤合并到一个循环中
+        processed_list = []
+        for item in plugin_list:
+            # 检查item是否为非空字符串且以 "{" 或 "[" 开头
+            if isinstance(item, str) and item and item.strip().startswith(("{" or "[")):
+                processed_list.append(self._deepParse(item))
             else:
-                newList.append(item)
-        dumpListToFile(
-            newList, f"output/parser/js/{getCurrTimeInFmt('%y-%m-%d_%H-%M')}/pluginList_parseClusterData.json"
-        )
+                processed_list.append(item)
 
-        resList = getAtomObjFromObj(newList)
-        dumpListToFile(
-            resList, f"output/parser/js/{getCurrTimeInFmt('%y-%m-%d_%H-%M')}/pluginList_parseAtomClusterData.json"
-        )
+        # 最终的原子对象提取
+        final_list = getAtomObjFromObj(processed_list)
 
-        return resList
+        # 移除调试文件转储
+        stageDataPath = f"output/parser/js/{getCurrTimeInFmt('%y-%m-%d_%H-%M')}/pluginList_final.json"
+        dumpListToFile(final_list, stageDataPath)
+
+        self._setStageDataPath(stageDataPath)
+
+        return final_list

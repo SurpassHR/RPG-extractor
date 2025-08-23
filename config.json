@@ -1,5 +1,10 @@
 {
   "game_data_dir": "",
   "output_data_dir": "output_files",
-  "min_log_level": 1
+  "min_log_level": 1,
+  "stage_data_path": {
+    "read_stage": "",
+    "parse_stage": "",
+    "format_stage": ""
+  }
 }

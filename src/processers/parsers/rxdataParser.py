@@ -59,4 +59,5 @@ class RxdataParser(ParserBase):
         writeListToRubyFile(list(scriptsRxdata), f"{filePath}/scriptsRxdata.rb")
         writeListToRubyFile([doodadsRxdata], f"{filePath}/doodadsRxdata.rb")
         rubyObjList = self._parseToGetAtomRubyObj(commonRxdata, f"{filePath}/atomRubyObjs.txt")
+        self._setStageDataPath(f"{filePath}/atomRubyObjs.txt")
         return self._parseToGetDialogueFromRubyObjs(rubyObjList)

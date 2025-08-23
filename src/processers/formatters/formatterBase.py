@@ -2,6 +2,7 @@ import enchant
 import re
 from typing import Any
 
+from gui_template.app.common.configLoader import getConfig, setConfig
 from src.utils.autoRegister import AutoRegisterBase
 from src.utils.fileTools import FileTool
 
@@ -85,6 +86,12 @@ class FormatterBase(AutoRegisterBase, FileTool):
             return True
         dictionary = enchant.Dict("en_US")
         return dictionary.check(string)
+
+    def _setStageDataPath(self, path: str) -> None:
+        setConfig("stage_data_path.format_stage", path)
+
+    def _getStageDataPath(self):
+        return getConfig("stage_data_path.format_stage")
 
     def format(self, data: Any) -> Any:
         pass
