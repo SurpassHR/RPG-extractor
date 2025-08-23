@@ -1,4 +1,5 @@
 from rubymarshal.classes import RubyObject
+from rich.progress import track
 
 from src.publicDef.readerDefs import RubyObjAttrCode
 from src.processers.parsers.parserBase import ParserBase
@@ -14,7 +15,7 @@ class RxdataParser(ParserBase):
 
     def _parseToGetAtomRubyObj(self, data, filePath: str):
         rubyObjList: list = []
-        for i, fileData in enumerate(data):
+        for i, fileData in track(enumerate(data), description="Parsing to get atom RubyObjects..."):
             atomObjList: list[RubyObject] = getAtomObjFromRubyObj(fileData)
             atomObjList = listDedup(atomObjList)
             # loggerPrintList(atomObjList)
@@ -28,7 +29,7 @@ class RxdataParser(ParserBase):
         titleList = []
         dialogueList = []
         optionList = []
-        for item in rubyObjList:
+        for item in track(rubyObjList, description="Parsing to get dialogue data..."):
             attrs = item.attributes
             code = attrs.get("@code")
             content: list = attrs.get("@parameters", [])

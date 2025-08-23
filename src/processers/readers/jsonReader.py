@@ -1,3 +1,5 @@
+from rich.progress import track
+
 from src.processers.readers.readerBase import ReaderBase
 from src.loggers.simpleLogger import loggerPrint
 from src.utils.fileTools import getFileNameWithoutExt, readJson, writeDictToJsonFile
@@ -14,7 +16,7 @@ class JsonReader(ReaderBase):
         super().read()
 
         jsonData = {}
-        for file in self.fileList:
+        for file in track((self.fileList), description="Reading files..."):
             data = readJson(file)
             fileNameWithoutExt = getFileNameWithoutExt(file)
             jsonData[fileNameWithoutExt] = data

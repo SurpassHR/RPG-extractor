@@ -1,6 +1,7 @@
 import os
 from typing import Any
 from rubymarshal.classes import RubyObject
+from rich.progress import track
 
 from src.loggers.simpleLogger import loggerPrint
 from src.processers.readers.rubymarshalReader.rubymarshalDecoder import (
@@ -71,7 +72,7 @@ class RxdataReader(ReaderBase):
 
     @timer
     def read(self) -> tuple[list, dict, list]:
-        for file in self.fileList:
+        for file in track(self.fileList, description="Reading files..."):
             try:
                 self._readOutAndSave(file)
             except Exception as e:
@@ -79,7 +80,7 @@ class RxdataReader(ReaderBase):
                 continue
 
         outputBaseFolder = os.path.join("output", "reader", "rxdata", getCurrTimeInFmt("%y-%m-%d_%H-%M"))
-        for fileData in self.commonRxdata:
+        for fileData in track(self.commonRxdata, description="Reading raw data from files..."):
             atomObjList: list[RubyObject] = getAtomObjFromRubyObj(fileData)
             atomObjList = listDedup(atomObjList)
             # loggerPrintList(atomObjList)
