@@ -4,6 +4,16 @@ on:
   workflow_dispatch:
   push:
     branches: [master]
+    paths-ignore:
+      - 'gui/**'
+      - 'gui_template/**'
+      - 'rgsspacker/**'
+      - 'assets/**'
+      - './*.sh'
+      - './.gitignore'
+      - './.gitmodules'
+      - './*.sh'
+      - '**/README.md'
 
 env:
   REPO_NAME: "$(echo ${{ github.repository }} | cut -d'/' -f2)"
