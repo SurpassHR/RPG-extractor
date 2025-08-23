@@ -3,8 +3,8 @@
   "output_data_dir": "output_files",
   "min_log_level": 1,
   "stage_data_path": {
-    "read_stage": "",
-    "parse_stage": "",
+    "read_stage": "output/reader/json/25-08-23_14-58/Weapons.json",
+    "parse_stage": "output/parser/json/25-08-23_14-58/all_raw_text.json",
     "format_stage": ""
   }
 }

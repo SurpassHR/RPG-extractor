@@ -2,7 +2,7 @@ import enchant
 import re
 from typing import Any
 
-from gui_template.app.common.configLoader import getConfig, setConfig
+from src.utils.configLoader import getConfig, setConfig
 from src.utils.autoRegister import AutoRegisterBase
 from src.utils.fileTools import FileTool
 

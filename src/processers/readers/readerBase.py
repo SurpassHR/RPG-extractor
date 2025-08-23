@@ -1,6 +1,6 @@
 from typing import Any
 
-from gui_template.app.common.configLoader import getConfig, setConfig
+from src.utils.configLoader import getConfig, setConfig
 from src.publicDef.levelDefs import LogLevels
 from src.loggers.simpleLogger import loggerPrint
 from src.utils.autoRegister import AutoRegisterBase
