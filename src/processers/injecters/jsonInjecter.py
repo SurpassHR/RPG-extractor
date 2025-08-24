@@ -4,7 +4,6 @@ import sys
 from pathlib import Path
 from typing import Union
 
-
 sys.path.append(str(Path(__file__).resolve().parent.parent.parent.parent))
 
 from src.utils.regexTools import execMultiReSub
