@@ -36,17 +36,21 @@ class TranslateByAtomPhrase(TranslatePostProc):
     desc: 根据原子短语翻译，原子短语使用指定的字符进行分割
     """
 
+    def sliceTrData(self, trData: dict[str, str], sliceChar: str) -> dict[str, str]:
+        trSplitData: dict = {
+            sliceK: sliceV
+            for trKey, trVal in trData.items()
+            for sliceK, sliceV in zip(trKey.split(sliceChar), trVal.split(sliceChar))
+            if len(trKey.split(sliceChar)) == len(trVal.split(sliceChar))
+        }
+        return trSplitData
+
     def procTrData(self, **kwargs) -> dict[str, str]:
         sliceChar = kwargs.get("sliceChar", " ")
         # 构建一个新字典，内容是格式化前数据作为键，格式化前内容替换翻译作为值
         trRawData: dict = {}
         # 构建一个新字典，将原子短语进行分割
-        trSplitData: dict = {
-            sliceK: sliceV
-            for trKey, trVal in self._trData.items()
-            for sliceK, sliceV in zip(trKey.split(sliceChar), trVal.split(sliceChar))
-            if len(trKey.split(sliceChar)) == len(trVal.split(sliceChar))
-        }
+        trSplitData: dict = self.sliceTrData(self._trData, sliceChar)
         print(trSplitData)
 
         for rawKey in self._rawData.keys():
