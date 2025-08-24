@@ -90,7 +90,7 @@ def _printFormatted(msg, level, frame):
     print(currTimeStr + fileContext + levelStr + msg)
 
 
-def loggerPrintList(dataList: list) -> None:
+def loggerPrintList(dataList: list, level: LogLevels = LogLevels.DEBUG) -> None:
     if not isinstance(dataList, list):
         loggerPrint("Not a list.", frame=inspect.stack()[1], level=LogLevels.WARNING)
         return
@@ -100,16 +100,16 @@ def loggerPrintList(dataList: list) -> None:
                 loggerPrintDict(item)
             else:
                 # 向上回溯一层栈帧再打印
-                loggerPrint(f"{item}", frame=inspect.stack()[1], level=LogLevels.DEBUG)
+                loggerPrint(f"{item}", frame=inspect.stack()[1], level=level)
 
 
-def loggerPrintDict(dataDict: dict) -> None:
+def loggerPrintDict(dataDict: dict, level: LogLevels = LogLevels.DEBUG) -> None:
     if not isinstance(dataDict, dict):
         loggerPrint("Not a dict.", frame=inspect.stack()[1], level=LogLevels.WARNING)
         return
     if dataDict is not None and dataDict != {}:
         for key, value in dataDict.items():
-            loggerPrint(f"{key}: {value}", frame=inspect.stack()[1], level=LogLevels.DEBUG)
+            loggerPrint(f"{key}: {value}", frame=inspect.stack()[1], level=level)
 
 
 def _stylize(msg: str, style: ANSIStyles) -> str:
