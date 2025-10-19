@@ -13,15 +13,18 @@ def main():
         startApp()
 
     else:
-        config = loadConfig()
-        dataFolder: str = args.dataFolder or config.get("game_data_dir", "")
-        outputFolder: str = args.outputFolder or config.get("output_data_dir", "")
+        if args.extract:
+            config = loadConfig()
+            dataFolder: str = args.dataFolder or config.get("game_data_dir", "")
+            outputFolder: str = args.outputFolder or config.get("output_data_dir", "")
 
-        title: str = args.title
-        format: bool = args.format
+            title: str = args.title
+            format: bool = args.format
 
-        dataExtractor = Proc(dataFolder=dataFolder, outputFolder=outputFolder, title=title, format=format)
-        dataExtractor.extract()
+            dataExtractor = Proc(dataFolder=dataFolder, outputFolder=outputFolder, title=title, format=format)
+            dataExtractor.extract()
+        elif args.inject:
+            pass
 
 
 if __name__ == "__main__":

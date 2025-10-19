@@ -10,11 +10,16 @@ class ArgParser:
         """
         Add arguments to the parser.
         """
+        self.parser.add_argument("--extract", type=str, help="Instruct the script to perform the extraction.")
+
         self.parser.add_argument("--dataFolder", type=str, help="Path to the data folder")
         self.parser.add_argument("--outputFolder", type=str, help="Path to the output folder")
         self.parser.add_argument("--title", type=str, help="Title of the game")
-        self.parser.add_argument("--gui", action="store_true", help="Launch the GUI application")
         self.parser.add_argument("--format", action="store_true", help="Format data or use raw data")
+
+        self.parser.add_argument("--inject", type=str, help="Instruct the script to perform the injection.")
+
+        self.parser.add_argument("--gui", action="store_true", help="Launch the GUI application")
 
     def parse_args(self):
         """
