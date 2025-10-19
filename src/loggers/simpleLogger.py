@@ -2,7 +2,7 @@ import sys
 import os
 import re
 import inspect
-from typing import Dict
+from typing import Dict, Any
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).resolve().parent.parent.parent))
@@ -90,7 +90,7 @@ def _printFormatted(msg, level, frame):
     print(currTimeStr + fileContext + levelStr + msg)
 
 
-def loggerPrintList(dataList: list, level: LogLevels = LogLevels.DEBUG) -> None:
+def loggerPrintList(dataList: list[Any], level: LogLevels = LogLevels.DEBUG) -> None:
     if not isinstance(dataList, list):
         loggerPrint("Not a list.", frame=inspect.stack()[1], level=LogLevels.WARNING)
         return
@@ -103,7 +103,7 @@ def loggerPrintList(dataList: list, level: LogLevels = LogLevels.DEBUG) -> None:
                 loggerPrint(f"{item}", frame=inspect.stack()[1], level=level)
 
 
-def loggerPrintDict(dataDict: dict, level: LogLevels = LogLevels.DEBUG) -> None:
+def loggerPrintDict(dataDict: dict[Any, Any], level: LogLevels = LogLevels.DEBUG) -> None:
     if not isinstance(dataDict, dict):
         loggerPrint("Not a dict.", frame=inspect.stack()[1], level=LogLevels.WARNING)
         return

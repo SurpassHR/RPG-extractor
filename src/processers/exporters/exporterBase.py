@@ -5,7 +5,9 @@ from src.utils.fileTools import FileTool
 
 class ExporterBase(AutoRegisterBase, FileTool):
     def __init__(self):
-        pass
+        super(FileTool).__init__()
+        self.exportFolder = ""
+        self.title = ""
 
     def init(self, exportFolder: str, title: str = ""):
         self.exportFolder = exportFolder

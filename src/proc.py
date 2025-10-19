@@ -93,7 +93,7 @@ class Proc:
         loggerPrint(f"Infering target file ext to be '{boldFont(self.targetFileExt)}', count: {maxNum}.")
 
     # 初始化各处理模块
-    def _initPrcsr(self, prcsrType: PrcsrType, *initArgs):
+    def _initPrcsr(self, prcsrType: PrcsrType, *initArgs) -> None:
         """
         通过从类管理器获取其类，将其赋值给一个实例属性，并调用其初始化方法，来初始化一个处理器（如读取器、解析器等）。
         """

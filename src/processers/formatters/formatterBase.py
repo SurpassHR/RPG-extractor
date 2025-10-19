@@ -2,8 +2,8 @@ import enchant
 import re
 from typing import Any
 
-from src.utils.configLoader import getConfig, setConfig
 from src.utils.autoRegister import AutoRegisterBase
+from src.utils.configLoader import getConfig, setConfig
 from src.utils.fileTools import FileTool
 
 
@@ -17,6 +17,7 @@ jsonPatternDict: dict[re.Pattern[str], str] = {
 
 class FormatterBase(AutoRegisterBase, FileTool):
     def __init__(self):
+        super(FileTool).__init__()
         self.lineEnd = [".", "?", "!", '"', "'", ")", "\\"]
         self.wordLineEnd = ["the", "with", "to"]
 

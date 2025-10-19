@@ -21,7 +21,7 @@ python ./run.py
 
 ```bash
 bash ./init_dev_env.sh # prepare environment for script to run
-python ./run.py --dataFolder <path_of_folder_contains_data_file> --outputFolder <destination_the_extraction_files_will_put> --title [just_write_your_games_title]
+python ./run.py --dataFolder <path_of_folder_contains_data_file> --outputFolder <destination_the_extraction_files_will_put> --title [just_write_your_games_title] --format
 ```
 
 > Note: Command line arguments' priority is higher than config file.
