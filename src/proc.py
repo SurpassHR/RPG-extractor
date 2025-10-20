@@ -126,13 +126,37 @@ class Proc:
 
             setattr(self, attrName, processorCls())
 
-            processorInstance = getattr(self, attrName)
-            processorInstance.init(*initArgs)
+            processorInst = getattr(self, attrName)
+            processorInst.init(*initArgs)
 
-            loggerPrint(f"Use {prcsrType.name} {boldFont(f'{processorInstance.__class__.__name__}')}.")
+            loggerPrint(f"Use {prcsrType.name} {boldFont(f'{processorInst.__class__.__name__}')}.")
         else:
             loggerPrint(
                 f"Procsr '{boldFont(f'{self.targetFileExt}{prcsrType.name}')}' not found.",
+                level=LogLevels.CRITICAL,
+            )
+            exit(-1)
+
+    def initRgssReader(self):
+        # 销毁已有的 reader
+        loggerPrint(msg="Destroying existing reader...", level=LogLevels.WARNING)
+        if hasattr(self, "reader"):
+            delattr(self, "reader")
+
+        loggerPrint(msg=f"Initializing {boldFont("RgssReader")}...", level=LogLevels.WARNING)
+        getter = getattr(self.classManager, f"getReader")
+        rgssReaderCls = getter("Rgss")
+
+        if rgssReaderCls:
+            setattr(self, "reader", rgssReaderCls())
+
+            rgssReaderInst = getattr(self, "reader")
+            rgssReaderInst.init(self.fileList)
+
+            loggerPrint(f"Use {rgssReaderCls.__name__} {boldFont(f'{rgssReaderInst.__class__.__name__}')}.")
+        else:
+            loggerPrint(
+                f"RgssReader not found.",
                 level=LogLevels.CRITICAL,
             )
             exit(-1)

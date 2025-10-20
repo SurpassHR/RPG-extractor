@@ -1,7 +1,7 @@
 from src.processers.injecters.injecterBase import InjecterBase
 
 
-class RxdataInjecter(InjecterBase):
+class RgssInjecter(InjecterBase):
     """
     desc: Ruby Marshal 文件注入器
     """

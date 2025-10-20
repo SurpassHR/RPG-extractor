@@ -22,6 +22,9 @@ def main():
     else:
         if args.extract:
             dataExtractor = Proc(dataFolder=dataFolder, outputFolder=outputFolder, title=title, format=format, mode=Proc.ProcMode.Extract)
+            # 启用实验性功能: rgss 读取器读取文件内容
+            if args.rgss:
+                dataExtractor.initRgssReader()
             dataExtractor.proc()
         elif args.inject:
             dataExtractor = Proc(dataFolder=dataFolder, outputFolder=outputFolder, title=title, mode=Proc.ProcMode.Inject)

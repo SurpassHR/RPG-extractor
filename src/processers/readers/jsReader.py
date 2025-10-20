@@ -1,4 +1,5 @@
 import os
+from typing import override
 
 from src.publicDef.levelDefs import LogLevels
 from src.loggers.simpleLogger import loggerPrint
@@ -13,8 +14,13 @@ class JsReader(ReaderBase):
         super().__init__()
 
     @timer
+    @override
     def read(self):
         super().read()
+
+        if not self.fileList:
+            loggerPrint(f"File list is empty.", level=LogLevels.WARNING)
+            exit(-1)
 
         targetFile = "plugins.js"
         for item in self.fileList:
@@ -37,7 +43,7 @@ class JsReader(ReaderBase):
             if not os.path.exists(os.path.dirname(debugFile)):
                 os.makedirs(os.path.dirname(debugFile))
             with open(debugFile, "a", encoding="utf-8") as f:
-                f.write(data)
+                _ = f.write(data)
             return data
         else:
             loggerPrint(f"Read file {targetFile} err.")

@@ -1,7 +1,7 @@
 from rich.progress import track
 
 from src.processers.readers.readerBase import ReaderBase
-from src.loggers.simpleLogger import loggerPrint
+from src.loggers.simpleLogger import loggerPrint, LogLevels
 from src.utils.fileTools import getFileNameWithoutExt, readJson, writeDictToJsonFile
 from src.utils.decorators.execTimer import timer
 from src.utils.timeTools import getCurrTimeInFmt
@@ -14,6 +14,10 @@ class JsonReader(ReaderBase):
     @timer
     def read(self) -> dict:
         super().read()
+
+        if not self.fileList:
+            loggerPrint(f"File list is empty.", level=LogLevels.WARNING)
+            exit(-1)
 
         jsonData = {}
         for file in track((self.fileList), description="Reading files..."):

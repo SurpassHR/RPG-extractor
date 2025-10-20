@@ -17,6 +17,9 @@ class ArgParser:
         _ = self.parser.add_argument("--dataFolder", type=str, help="Path to the data folder.")
         _ = self.parser.add_argument("--outputFolder", type=str, help="Path to the output folder.")
 
+        # 开发参数
+        _ = self.parser.add_argument("--rgss", action="store_true", help="Use the developing rgss reader for rubymarshall reader.")
+
         # 提取参数
         _ = self.parser.add_argument("--extract", action="store_true", help="Instruct the script to perform the extraction.")
         _ = self.parser.add_argument("--title", type=str, help="Title of the game.")
