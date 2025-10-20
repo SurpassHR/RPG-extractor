@@ -1,3 +1,5 @@
+# rgssReader 是 rubymarshallReader 的升级版
+
 from src.processers.readers.readerBase import ReaderBase
 
 

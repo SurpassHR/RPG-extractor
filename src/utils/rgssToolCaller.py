@@ -10,9 +10,9 @@ from src.loggers.simpleLogger import loggerPrint, loggerPrintList
 from src.publicDef.levelDefs import LogLevels
 
 
-class RvpackerCaller:
+class RgssToolCaller:
     """
-    desc: 调用rvpacker
+    desc: 调用 rgss 工具
     """
 
     class FuncName(StrEnum):
@@ -65,7 +65,7 @@ class RvpackerCaller:
 
 
 if __name__ == "__main__":
-    rvPackerCaller = RvpackerCaller()
+    rvPackerCaller = RgssToolCaller()
     rvPackerCaller._detectSubmodule()
     rvPackerCaller.extractSingleFile(
         r"E:\Games\25-03-31\Curse of Pleasure v0.9\Data\Map005.rxdata".replace("\\", "/"),
