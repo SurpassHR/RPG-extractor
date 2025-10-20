@@ -1,8 +1,8 @@
 import os
 import sys
+import shlex
 from pathlib import Path
 from enum import StrEnum
-import shlex
 
 sys.path.append(str(Path(__file__).resolve().parent.parent.parent.parent.parent))
 
@@ -27,7 +27,7 @@ class RgssToolCaller:
         HELP = "--help"
 
     def __init__(self) -> None:
-        pass
+        self._detectSubmodule()
 
     def _detectSubmodule(self):
         absPath = os.path.abspath("./")
@@ -44,10 +44,10 @@ class RgssToolCaller:
             exit(1)
 
         # 测试调用
-        self.funcCallNoRet([self.FuncName.HELP])
+        self._funcCallNoRet([self.FuncName.HELP])
 
-    def extractSingleFile(self, inFilePath: str, outFilePath: str):
-        self.funcCallNoRet(
+    def convertSingleFile(self, inFilePath: str, outFilePath: str):
+        self._funcCallNoRet(
             [
                 self.FuncName.INPUT_FILE,
                 inFilePath,
@@ -56,18 +56,27 @@ class RgssToolCaller:
             ]
         )
 
-    def funcCall(self, argList: list[str]):
+    def convertMultiFiles(self, inFileList: list[str], outFileList: list[str]):
+        self._funcCallNoRet(
+            [
+                self.FuncName.INPUT_FILE_LIST,
+                ",".join(inFileList),
+                self.FuncName.OUTPUT_FILE_LIST,
+                ",".join(outFileList),
+            ]
+        )
+
+    def _funcCall(self, argList: list[str]):
         quoted_args = [shlex.quote(arg) for arg in argList]
         return os.popen(f"ruby {self.rgss_extractor} {' '.join(quoted_args)}").read()
 
-    def funcCallNoRet(self, argList: list[str]):
-        loggerPrintList(self.funcCall(argList).split("\n"), level=LogLevels.INFO)
+    def _funcCallNoRet(self, argList: list[str]):
+        loggerPrintList(self._funcCall(argList).split("\n"), level=LogLevels.INFO)
 
 
 if __name__ == "__main__":
     rvPackerCaller = RgssToolCaller()
-    rvPackerCaller._detectSubmodule()
-    rvPackerCaller.extractSingleFile(
+    rvPackerCaller.convertSingleFile(
         r"E:\Games\25-03-31\Curse of Pleasure v0.9\Data\Map005.rxdata".replace("\\", "/"),
         "./Map005.yaml",
     )
