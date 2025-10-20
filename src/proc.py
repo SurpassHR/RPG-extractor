@@ -26,13 +26,31 @@ class Proc:
         Exporter = 3
         Injecter = 4
 
-    def __init__(self, dataFolder: str, outputFolder: str, title: str = "", format: bool = False):
+    def __init__(
+        self,
+        dataFolder: str,
+        outputFolder: str,
+        trFolder: str = "",
+        title: str = "",
+        format: bool = False,
+        mode: ProcMode = ProcMode.Extract,
+    ):
+        """
+        desc: 初始化
+        params:
+            dataFolder: 游戏数据文件夹路径
+            outputFolder: 输出文件夹路径，当模式为 Inject 时，用于写入数据文件
+            title: 标题
+            format: 是否格式化
+            mode: 处理模式
+        """
         # 自动注册
-        self.classManager = ClassManager()
+        self.classManager: ClassManager = ClassManager()
 
         # 用户配置
         self.dataFolder: str = dataFolder
         self.outputFolder: str = outputFolder
+        self.trFolder: str = trFolder
 
         # 临时变量
         self.title: str = title
@@ -41,7 +59,7 @@ class Proc:
         self.execFormat: bool = format
 
         # 处理模式
-        self.mode: Proc.ProcMode = self.ProcMode.Extract
+        self.mode: Proc.ProcMode = mode
 
         # 处理模块
         self.reader: ReaderBase
@@ -128,8 +146,11 @@ class Proc:
         self._initPrcsr(self.PrcsrType.Reader, self.fileList)
         self._initPrcsr(self.PrcsrType.Parser)
         self._initPrcsr(self.PrcsrType.Formatter)
-        self._initPrcsr(self.PrcsrType.Exporter, self.outputFolder, self.title)
-        self._initPrcsr(self.PrcsrType.Injecter, self.outputFolder, self.title)
+
+        if self.mode == self.ProcMode.Extract:
+            self._initPrcsr(self.PrcsrType.Exporter, self.outputFolder, self.title)
+        else:
+            self._initPrcsr(self.PrcsrType.Injecter, self.outputFolder, self.title)
 
     def _init(self):
         self._inferFileExt()
@@ -146,3 +167,9 @@ class Proc:
     def inject(self, jsonPath: str):
         translateData: dict[str, str] = readJson(jsonPath)
         self.injecter.inject(translateData)
+
+    def proc(self):
+        if self.getMode() == self.ProcMode.Extract:
+            self.extract()
+        else:
+            self.inject(self.trFolder)

@@ -33,7 +33,7 @@ class InjecterBase(AutoRegisterBase, FileTool):
     """
 
     def __init__(self):
-        pass
+        super(FileTool).__init__()
 
     def init(self, gameDataFolder: str, backupFolder: str = ""):
         self.gameDataFolder = gameDataFolder
@@ -51,6 +51,8 @@ class InjecterBase(AutoRegisterBase, FileTool):
         self._backupFolder()
         # 加载翻译字典
         self.trDict: TrDict = TrDict(data)
+        # 读取原始数据的提取文件，应当为一个列表的 .json 文件
+
 
     def _backupFolder(self):
         try:

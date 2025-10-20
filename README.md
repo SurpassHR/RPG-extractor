@@ -20,8 +20,12 @@ python ./run.py
 ### 2. Command line arguments
 
 ```bash
-bash ./init_dev_env.sh # prepare environment for script to run
+# prepare environment for script to run
+bash ./init_dev_env.sh
+# command to extract data
 python ./run.py --extract --dataFolder <path_of_folder_contains_data_file> --outputFolder <destination_the_extraction_files_will_put> --title [just_write_your_games_title] --format
+# command to inject data
+python ./run.py --inject --dataFolder <path_of_folder_contains_extracted_data_file> --outputFolder <destination_the_injection_files_will_put> --trFolder <path_of_folder_contains_translated_data_file> --title [just_write_your_games_title]
 ```
 
 > Note: Command line arguments' priority is higher than config file.
@@ -63,6 +67,8 @@ Go to `Actions - Test extractor function`, click latest workflow and get extract
 - [x] Support cli arguments, see `argParser.py`
 
 - [x] Github actions to generate artifacts of extraction files
+
+- [ ] Inject translation data back to .rxdata files
 
 - [ ] GUI
 
