@@ -2,7 +2,6 @@ import sys
 import os
 import re
 import inspect
-from typing import Dict, Any
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).resolve().parent.parent.parent))
@@ -12,7 +11,7 @@ from src.publicDef.levelDefs import LogLevels
 from src.utils.timeTools import getCurrTimeInFmt, getCurrTime
 from src.utils.configLoader import loadConfig
 
-LOG_LEVEL_AND_COLOR_MATCH: Dict[LogLevels, ANSIColors] = {
+LOG_LEVEL_AND_COLOR_MATCH: dict[LogLevels, ANSIColors] = {
     LogLevels.DEBUG: ANSIColors.COLOR_BRIGHT_BLUE,
     LogLevels.INFO: ANSIColors.COLOR_BRIGHT_GREEN,
     LogLevels.WARNING: ANSIColors.COLOR_BRIGHT_YELLOW,
@@ -20,10 +19,10 @@ LOG_LEVEL_AND_COLOR_MATCH: Dict[LogLevels, ANSIColors] = {
     LogLevels.CRITICAL: ANSIColors.COLOR_BRIGHT_MAGENTA,
 }
 
-MIN_LOG_LEVEL = loadConfig().get("min_log_level", LogLevels.INFO.value)
+MIN_LOG_LEVEL: int = int(loadConfig().get("min_log_level", LogLevels.INFO.value))
 
 
-def loggerPrint(msg, level: LogLevels = LogLevels.INFO, frame=None) -> None:
+def loggerPrint(msg: str, level: LogLevels = LogLevels.INFO, frame: inspect.FrameInfo | None=None) -> None:
     # 总是写入文件（直接写入，不经过stdout重定向）
     _writeToFile(msg, level, frame)
 
@@ -32,7 +31,7 @@ def loggerPrint(msg, level: LogLevels = LogLevels.INFO, frame=None) -> None:
         _printFormatted(msg, level, frame)
 
 
-def _writeToFile(msg, level, frame):
+def _writeToFile(msg: str, level: LogLevels, frame: inspect.FrameInfo | None=None):
     msg = re.sub(r"\033\[[0-9]{1,}m", "", msg)
     logFile = os.path.join("logs", f"{getCurrTimeInFmt(fmt='%y-%m-%d')}.log")
     absPath = os.path.abspath(logFile)
@@ -44,10 +43,10 @@ def _writeToFile(msg, level, frame):
     logContent = _formatForFile(msg, level, frame)
 
     with open(absPath, "a", encoding="utf-8") as f:
-        f.write(logContent + "\n")
+        _ = f.write(logContent + "\n")
 
 
-def _formatForFile(msg, level, frame):
+def _formatForFile(msg: str, level: LogLevels, frame: inspect.FrameInfo | None):
     if not frame:
         frame = inspect.stack()[2]
 
@@ -67,7 +66,7 @@ def _formatForFile(msg, level, frame):
     return f"{currTime} {fileContext} {levelStr} {msg}"
 
 
-def _printFormatted(msg, level, frame):
+def _printFormatted(msg: str, level: LogLevels, frame: inspect.FrameInfo | None):
     colorStr: str = LOG_LEVEL_AND_COLOR_MATCH.get(level, ANSIColors.COLOR_RESET).value
     resetColorStr: str = ANSIColors.COLOR_RESET.value
 
@@ -90,24 +89,18 @@ def _printFormatted(msg, level, frame):
     print(currTimeStr + fileContext + levelStr + msg)
 
 
-def loggerPrintList(dataList: list[Any], level: LogLevels = LogLevels.DEBUG) -> None:
-    if not isinstance(dataList, list):
-        loggerPrint("Not a list.", frame=inspect.stack()[1], level=LogLevels.WARNING)
-        return
-    if dataList is not None and dataList != []:
+def loggerPrintList(dataList: list[object], level: LogLevels = LogLevels.DEBUG) -> None:
+    if dataList and dataList != []:
         for item in dataList:
             if isinstance(item, dict):
-                loggerPrintDict(item)
+                loggerPrintDict(item, level=level)
             else:
                 # 向上回溯一层栈帧再打印
                 loggerPrint(f"{item}", frame=inspect.stack()[1], level=level)
 
 
-def loggerPrintDict(dataDict: dict[Any, Any], level: LogLevels = LogLevels.DEBUG) -> None:
-    if not isinstance(dataDict, dict):
-        loggerPrint("Not a dict.", frame=inspect.stack()[1], level=LogLevels.WARNING)
-        return
-    if dataDict is not None and dataDict != {}:
+def loggerPrintDict(dataDict: dict[str | int, object], level: LogLevels = LogLevels.DEBUG) -> None:
+    if dataDict and dataDict != {}:
         for key, value in dataDict.items():
             loggerPrint(f"{key}: {value}", frame=inspect.stack()[1], level=level)
 
@@ -125,35 +118,16 @@ def italicFont(msg: str) -> str:
 
 
 def loggerPrintBanner():
-    loggerPrint(
-        boldFont(
-            """\033[31m██████╗ ██████╗  ██████╗       ███████╗██╗  ██╗████████╗██████╗  █████╗  █████╗ ████████╗ █████╗ ██████╗ \033[0m"""
-        )
-    )
-    loggerPrint(
-        boldFont(
-            """\033[35m██╔══██╗██╔══██╗██╔════╝       ██╔════╝╚██╗██╔╝╚══██╔══╝██╔══██╗██╔══██╗██╔══██╗╚══██╔══╝██╔══██╗██╔══██╗\033[0m"""
-        )
-    )
-    loggerPrint(
-        boldFont(
-            """\033[34m██████╔╝██████╔╝██║  ██╗ █████╗█████╗   ╚███╔╝    ██║   ██████╔╝███████║██║  ╚═╝   ██║   ██║  ██║██████╔╝\033[0m"""
-        )
-    )
-    loggerPrint(
-        boldFont(
-            """\033[36m██╔══██╗██╔═══╝ ██║  ╚██╗╚════╝██╔══╝   ██╔██╗    ██║   ██╔══██╗██╔══██║██║  ██╗   ██║   ██║  ██║██╔══██╗\033[0m"""
-        )
-    )
-    loggerPrint(
-        boldFont(
-            """\033[32m██║  ██║██║     ╚██████╔╝      ███████╗██╔╝╚██╗   ██║   ██║  ██║██║  ██║╚█████╔╝   ██║   ╚█████╔╝██║  ██║\033[0m"""
-        )
-    )
-    loggerPrint(
-        boldFont(
-            """\033[33m╚═╝  ╚═╝╚═╝      ╚═════╝       ╚══════╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝ ╚════╝    ╚═╝    ╚════╝ ╚═╝  ╚═╝\033[0m"""
-        )
+    loggerPrintList(
+        dataList=[
+            boldFont("""\033[31m██████╗ ██████╗  ██████╗       ███████╗██╗  ██╗████████╗██████╗  █████╗  █████╗ ████████╗ █████╗ ██████╗ \033[0m"""),
+            boldFont("""\033[35m██╔══██╗██╔══██╗██╔════╝       ██╔════╝╚██╗██╔╝╚══██╔══╝██╔══██╗██╔══██╗██╔══██╗╚══██╔══╝██╔══██╗██╔══██╗\033[0m"""),
+            boldFont("""\033[34m██████╔╝██████╔╝██║  ██╗ █████╗█████╗   ╚███╔╝    ██║   ██████╔╝███████║██║  ╚═╝   ██║   ██║  ██║██████╔╝\033[0m"""),
+            boldFont("""\033[36m██╔══██╗██╔═══╝ ██║  ╚██╗╚════╝██╔══╝   ██╔██╗    ██║   ██╔══██╗██╔══██║██║  ██╗   ██║   ██║  ██║██╔══██╗\033[0m"""),
+            boldFont("""\033[32m██║  ██║██║     ╚██████╔╝      ███████╗██╔╝╚██╗   ██║   ██║  ██║██║  ██║╚█████╔╝   ██║   ╚█████╔╝██║  ██║\033[0m"""),
+            boldFont("""\033[33m╚═╝  ╚═╝╚═╝      ╚═════╝       ╚══════╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝ ╚════╝    ╚═╝    ╚════╝ ╚═╝  ╚═╝\033[0m"""),
+        ],
+        level=LogLevels.INFO,
     )
 
 

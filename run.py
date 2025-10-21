@@ -1,15 +1,15 @@
 from src.publicDef.levelDefs import LogLevels
 from src.loggers.simpleLogger import loggerPrint
-from src.proc import Proc
 from src.utils.configLoader import loadConfig
 from src.utils.argParser import ArgParser
+from src.proc import Proc
 
 
 def main():
     arg_parser = ArgParser()
     args = arg_parser.parse_args()
 
-    config: dict = loadConfig()
+    config = loadConfig()
     dataFolder: str = args.dataFolder or config.get("game_data_dir", "")
     outputFolder: str = args.outputFolder or config.get("output_data_dir", "")
 

@@ -7,6 +7,14 @@
 This is a tool for extracting RPG(Role Playing Game) related data that has `.rxdata`, `.rvdata`, `.json` and `.js` ext.
 The structure is extensible as you can add your 'processer' to src/processers.
 
+## Environment
+
+The tool need Python and Ruby installed.
+
+Version requirements:
+- Python >= 3.12.9
+- Ruby >= 3.4.5
+
 ## Usage
 
 ### 1. Config file
