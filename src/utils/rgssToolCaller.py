@@ -1,11 +1,12 @@
 import os
+from pipes import quote
 import sys
 import shlex
 from pathlib import Path
 from enum import StrEnum
 from typing import overload
 
-sys.path.append(str(Path(__file__).resolve().parent.parent.parent.parent.parent))
+sys.path.append(str(Path(__file__).resolve().parent.parent.parent))
 
 from src.loggers.simpleLogger import loggerPrint, loggerPrintList
 from src.publicDef.levelDefs import LogLevels
@@ -25,6 +26,7 @@ class RgssToolCaller:
         SOURCE_DIR = "--source-dir"
         DEST_DIR = "--dest-dir"
         TARGET_EXT = "--target-ext"
+        SHOW_DEST_FILES = "--show-dest-files"
         HELP = "--help"
 
     def __init__(self) -> None:
@@ -47,87 +49,81 @@ class RgssToolCaller:
         # 测试调用
         self._funcCallNoRet([self.FuncName.HELP])
 
-    def convSingleFile(self, inFilePath: str, outFilePath: str):
-        self._funcCallNoRet(
-            [
-                self.FuncName.INPUT_FILE,
-                inFilePath,
-                self.FuncName.OUTPUT_FILE,
-                outFilePath,
-            ]
-        )
+    def convSingleFile(self, inFilePath: str, outFilePath: str, showDestFiles: bool = False) -> str:
+        funcCallArgs = [
+            self.FuncName.INPUT_FILE,
+            inFilePath,
+            self.FuncName.OUTPUT_FILE,
+            outFilePath,
+        ]
+        return self._funcCall(self._makeShowDestFilesArgs(funcCallArgs, showDestFiles))
+
+    def _makeShowDestFilesArgs(self, args: list[str], showDestFiles: bool) -> list[str]:
+        return args + [self.FuncName.SHOW_DEST_FILES] if showDestFiles else args
 
     @overload
-    def convMultiFiles(self, inFileList: list[str], outFileList: list[str]) -> None:
+    def convMultiFiles(self, inFileList: list[str], outFileList: list[str], showDestFiles: bool = False) -> str:
         ...
 
     # 声明第二个重载签名：处理文件夹路径
     @overload
-    def convMultiFiles(self, srcFolder: str, dstFolder: str) -> None:
+    def convMultiFiles(self, srcFolder: str, dstFolder: str, showDestFiles: bool = False) -> str:
         ...
 
     # 提供统一的实现
-    def convMultiFiles(self, *args, **kwargs) -> None:
+    def convMultiFiles(self, *args, **kwargs) -> str:
         # 优先检查关键字参数，因为它们更明确
         if 'inFileList' in kwargs and 'outFileList' in kwargs:
             inFileList = kwargs['inFileList']
             outFileList = kwargs['outFileList']
             # 为了代码健壮性，仍然可以进行类型检查
             if isinstance(inFileList, list) and isinstance(outFileList, list):
-                self._funcCallNoRet(
-                    [
-                        self.FuncName.INPUT_FILE_LIST,
-                        ",".join(inFileList),
-                        self.FuncName.OUTPUT_FILE_LIST,
-                        ",".join(outFileList),
-                    ]
-                )
-                return
+                funcCallArgs = [
+                    self.FuncName.INPUT_FILE_LIST,
+                    ",".join(inFileList),
+                    self.FuncName.OUTPUT_FILE_LIST,
+                    ",".join(outFileList),
+                ]
+                return self._funcCall(self._makeShowDestFilesArgs(funcCallArgs, kwargs.get('showDestFiles', False)))
 
         if 'srcFolder' in kwargs and 'dstFolder' in kwargs:
             srcFolder = kwargs['srcFolder']
             dstFolder = kwargs['dstFolder']
             if isinstance(srcFolder, str) and isinstance(dstFolder, str):
-                self._funcCallNoRet(
-                    [
-                        self.FuncName.SOURCE_DIR,
-                        srcFolder,
-                        self.FuncName.DEST_DIR,
-                        dstFolder,
-                    ]
-                )
-                return
+                funcCallArgs = [
+                    self.FuncName.SOURCE_DIR,
+                    srcFolder,
+                    self.FuncName.DEST_DIR,
+                    dstFolder,
+                ]
+                return self._funcCall(self._makeShowDestFilesArgs(funcCallArgs, kwargs.get('showDestFiles', False)))
 
         # 如果没有关键字参数，则检查位置参数
         if len(args) == 2:
             arg1, arg2 = args
             if isinstance(arg1, list) and isinstance(arg2, list):
                 # 对应 (inFileList, outFileList)
-                self._funcCallNoRet(
-                    [
-                        self.FuncName.INPUT_FILE_LIST,
-                        ",".join(arg1),
-                        self.FuncName.OUTPUT_FILE_LIST,
-                        ",".join(arg2),
-                    ]
-                )
-                return
+                funcCallArgs = [
+                    self.FuncName.INPUT_FILE_LIST,
+                    ",".join(arg1),
+                    self.FuncName.OUTPUT_FILE_LIST,
+                    ",".join(arg2),
+                ]
+                return self._funcCall(self._makeShowDestFilesArgs(funcCallArgs, kwargs.get('showDestFiles', False)))
             elif isinstance(arg1, str) and isinstance(arg2, str):
                 # 对应 (srcFolder, dstFolder)
-                self._funcCallNoRet(
-                    [
-                        self.FuncName.SOURCE_DIR,
-                        arg1,
-                        self.FuncName.DEST_DIR,
-                        arg2,
-                    ]
-                )
-                return
+                funcCallArgs =[
+                    self.FuncName.SOURCE_DIR,
+                    arg1,
+                    self.FuncName.DEST_DIR,
+                    arg2,
+                ]
+                return self._funcCall(self._makeShowDestFilesArgs(funcCallArgs, kwargs.get('showDestFiles', False)))
 
         # 如果所有情况都不匹配，抛出异常
         raise TypeError("Invalid arguments for convMultiFiles")
 
-    def _funcCall(self, argList: list[str]):
+    def _funcCall(self, argList: list[str]) -> str:
         quoted_args = [shlex.quote(arg) for arg in argList]
         return os.popen(f"ruby {self.rgss_extractor} {' '.join(quoted_args)}").read()
 
@@ -137,7 +133,9 @@ class RgssToolCaller:
 
 if __name__ == "__main__":
     rvPackerCaller = RgssToolCaller()
-    rvPackerCaller.convSingleFile(
+    ret = rvPackerCaller.convSingleFile(
         r"E:\Games\25-03-31\Curse of Pleasure v0.9\Data\Map005.rxdata".replace("\\", "/"),
         "./Map005.yaml",
+        True,
     )
+    print(ret)

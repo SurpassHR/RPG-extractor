@@ -3,6 +3,7 @@ import os
 import re
 import inspect
 from pathlib import Path
+from typing import Sequence
 
 sys.path.append(str(Path(__file__).resolve().parent.parent.parent))
 
@@ -89,7 +90,7 @@ def _printFormatted(msg: str, level: LogLevels, frame: inspect.FrameInfo | None)
     print(currTimeStr + fileContext + levelStr + msg)
 
 
-def loggerPrintList(dataList: list[object], level: LogLevels = LogLevels.DEBUG) -> None:
+def loggerPrintList(dataList: Sequence[object], level: LogLevels = LogLevels.DEBUG) -> None:
     if dataList and dataList != []:
         for item in dataList:
             if isinstance(item, dict):
