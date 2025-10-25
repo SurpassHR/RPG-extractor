@@ -18,7 +18,7 @@ def getProjectRoot():
 
 
 def loadConfig() -> dict:
-    configFilePath = os.path.join(getProjectRoot(), "config.json")
+    configFilePath = os.path.join(getProjectRoot(), "config", "config.json")
     if not os.path.exists(configFilePath):
         raise FileNotFoundError(f"Config file not found: {configFilePath}")
 
@@ -27,8 +27,8 @@ def loadConfig() -> dict:
 
 def setConfig(key: str, value: Any) -> bool:
     try:
-        config_path = os.path.join("config.json")
-        Path(os.path.dirname(config_path)).mkdir(parents=True, exist_ok=True)
+        configFilePath = os.path.join(getProjectRoot(), "config", "config.json")
+        Path(os.path.dirname(configFilePath)).mkdir(parents=True, exist_ok=True)
 
         config = loadConfig()
         keys = key.split(".")
@@ -39,7 +39,7 @@ def setConfig(key: str, value: Any) -> bool:
             current = current[k]
         current[keys[-1]] = value
 
-        with open(config_path, "w", encoding="utf-8") as f:
+        with open(configFilePath, "w", encoding="utf-8") as f:
             json.dump(config, f, indent=2)
         return True
     except Exception:

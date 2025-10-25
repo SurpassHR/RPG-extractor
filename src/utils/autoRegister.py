@@ -1,3 +1,4 @@
+from src.loggers.simpleLogger import boldFont, loggerPrint
 from src.utils.classManager import ClassManager
 
 
@@ -19,4 +20,5 @@ class AutoRegisterMeta(type):
 
 
 class AutoRegisterBase(metaclass=AutoRegisterMeta):
-    pass
+    def __init__(self):
+        loggerPrint(f"Instance {boldFont(self.__class__.__name__)} created")
