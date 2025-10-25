@@ -25,6 +25,13 @@ class RgssReader(ReaderBase):
 
         # 应当为一个数据文件的列表
         rgssData = []
-
+        # 将父类的 fileList 通过 ',' 分隔，合并为一个字符串
+        fileListStr: str = ",".join(self.fileList)
+        print(fileListStr)
 
         return [], {}, []
+
+
+if __name__ == "__main__":
+    reader = RgssReader()
+    reader.read()
