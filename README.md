@@ -17,7 +17,13 @@ Version requirements:
 
 ## Usage
 
-### 1. Config file
+- Pull down submodules first:
+
+```bash
+bash ./submodule_clear_cache.sh && bash ./submodule_init.sh && bash ./submodule_update.sh
+```
+
+### Config file
 
 ```bash
 bash ./init_dev_env.sh # prepare environment for script to run
@@ -25,7 +31,7 @@ bash ./init_dev_env.sh # prepare environment for script to run
 python ./run.py
 ```
 
-### 2. Command line arguments
+### Command line arguments
 
 ```bash
 # prepare environment for script to run
@@ -77,6 +83,16 @@ Go to `Actions - Test extractor function`, click latest workflow and get extract
 - [x] Github actions to generate artifacts of extraction files
 
 - [ ] Inject translation data back to .rxdata files
+
+  - [x] Implement rgss tool caller in Python
+
+  - [x] Use rgss tool convert rxdata file into yaml file
+
+  - [ ] Convert yaml file to single json file to translate using [AiNiee](https://github.com/NEKOparapa/AiNiee)
+
+  - [ ] Use translation json file as dictionary to replace original content in yaml file
+
+  - [x] Use rgss tool convert yaml file back to rxdata file
 
 - [ ] GUI
 
