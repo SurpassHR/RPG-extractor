@@ -80,9 +80,9 @@ class RgssToolCaller:
             if isinstance(inFileList, list) and isinstance(outFileList, list):
                 funcCallArgs = [
                     self.FuncName.INPUT_FILE_LIST,
-                    ",".join(inFileList),
+                    ",".join([f"\"{file}\"" for file in inFileList]),
                     self.FuncName.OUTPUT_FILE_LIST,
-                    ",".join(outFileList),
+                    ",".join([f"\"{file}\"" for file in outFileList]),
                 ]
                 return self._funcCall(self._makeShowDestFilesArgs(funcCallArgs, kwargs.get('showDestFiles', False)))
 
@@ -99,18 +99,18 @@ class RgssToolCaller:
                 return self._funcCall(self._makeShowDestFilesArgs(funcCallArgs, kwargs.get('showDestFiles', False)))
 
         # 如果没有关键字参数，则检查位置参数
-        if len(args) == 2:
-            arg1, arg2 = args
-            if isinstance(arg1, list) and isinstance(arg2, list):
+        if len(args) == 3:
+            arg1, arg2, arg3 = args
+            if isinstance(arg1, list) and isinstance(arg2, list) and isinstance(arg3, bool):
                 # 对应 (inFileList, outFileList)
                 funcCallArgs = [
                     self.FuncName.INPUT_FILE_LIST,
-                    ",".join(arg1),
+                    ",".join([f"\"{file}\"" for file in arg1]),
                     self.FuncName.OUTPUT_FILE_LIST,
-                    ",".join(arg2),
+                    ",".join([f"\"{file}\"" for file in arg2]),
                 ]
-                return self._funcCall(self._makeShowDestFilesArgs(funcCallArgs, kwargs.get('showDestFiles', False)))
-            elif isinstance(arg1, str) and isinstance(arg2, str):
+                return self._funcCall(self._makeShowDestFilesArgs(funcCallArgs, arg3))
+            elif isinstance(arg1, str) and isinstance(arg2, str) and isinstance(arg3, bool):
                 # 对应 (srcFolder, dstFolder)
                 funcCallArgs =[
                     self.FuncName.SOURCE_DIR,
@@ -118,14 +118,14 @@ class RgssToolCaller:
                     self.FuncName.DEST_DIR,
                     arg2,
                 ]
-                return self._funcCall(self._makeShowDestFilesArgs(funcCallArgs, kwargs.get('showDestFiles', False)))
+                return self._funcCall(self._makeShowDestFilesArgs(funcCallArgs, arg3))
 
         # 如果所有情况都不匹配，抛出异常
         raise TypeError("Invalid arguments for convMultiFiles")
 
     def _funcCall(self, argList: list[str]) -> str:
         quoted_args = [shlex.quote(arg) for arg in argList]
-        return os.popen(f"ruby {self.rgss_extractor} {' '.join(quoted_args)}").read()
+        return os.popen(f"ruby {self.rgss_extractor} {' '.join(quoted_args)}".replace("'", "")).read()
 
     def _funcCallNoRet(self, argList: list[str]):
         loggerPrintList(self._funcCall(argList).split("\n"), level=LogLevels.INFO)

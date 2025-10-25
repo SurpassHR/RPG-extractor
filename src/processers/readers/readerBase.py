@@ -9,6 +9,7 @@ from src.utils.decorators.execTimer import timer
 
 class ReaderBase(AutoRegisterBase):
     def __init__(self):
+        super().__init__()
         self.fileList = None
 
     def init(self, fileList: list[str]) -> None:
